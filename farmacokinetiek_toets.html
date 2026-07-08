@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Farmacokinetiek · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:40px 16px 70px;
+  }
+  .wrap{max-width:660px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:20px;
+  }
+  .eyebrow{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:27px;
+    margin:4px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:4px;margin:0 0 26px;}
+  .seg{flex:1;height:5px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:10px;
+    padding:30px 30px 28px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:4px 10px;
+    border-radius:4px;
+    margin-bottom:14px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:15px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:14px;
+    margin-bottom:16px;
+    line-height:1.55;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:19px;
+    line-height:1.5;
+    margin:0 0 20px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-12px 0 16px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:9px;margin-bottom:6px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 40px 12px 14px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:14.5px;
+    line-height:1.4;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:17px;height:17px;flex:0 0 17px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:16px;color:var(--correct);
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:15px;color:var(--incorrect);
+    position:absolute;right:15px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:12px;color:var(--muted);margin-bottom:10px;display:block;}
+  .match-grid{display:flex;gap:18px;margin-bottom:6px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:9px;}
+  .match-item{
+    padding:11px 12px;border:1px solid var(--line);border-radius:6px;
+    background:var(--paper);font-size:13.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:8px;
+  }
+  .match-item .badge{
+    width:19px;height:19px;flex:0 0 19px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .order-chip{
+    padding:9px 13px;border:1px solid var(--line);border-radius:6px;
+    background:var(--paper);font-size:13.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:44px;
+    border:1px dashed var(--navy-2);
+    border-radius:6px;
+    padding:8px;
+    display:flex;flex-wrap:wrap;gap:8px;
+    margin-bottom:8px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:12px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:14px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:16px;padding:14px 16px;border-radius:6px;
+    background:var(--paper);
+    font-size:13.5px;line-height:1.6;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:13.5px;
+    padding:11px 20px;border-radius:6px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:50px;color:var(--navy);margin:6px 0 0;}
+  .domain-bars{margin:26px 0;display:flex;flex-direction:column;gap:10px;}
+  .domain-row{display:flex;align-items:center;gap:12px;font-size:12.5px;}
+  .domain-name{width:170px;flex:0 0 170px;color:var(--muted);font-size:11.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:36px;text-align:right;color:var(--muted);font-size:11.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:14px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:15px;margin-bottom:6px;}
+  .miss-explain{font-size:13px;color:var(--muted);line-height:1.55;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Farmacokinetiek · Oefentoets</div>
+      <h1>Farmacokinetiek</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 18</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Absorptie',
+    q:'Wat beschrijft de biologische beschikbaarheid (F) van een geneesmiddel?',
+    options:[
+      'Het percentage van de dosis dat in de maag wordt opgelost',
+      'De hoeveelheid werkzame stof die de bloedbaan bereikt t.o.v. intraveneuze toediening',
+      'De snelheid waarmee de lever een geneesmiddel volledig afbreekt',
+      'Het volume waarin een geneesmiddel zich in het lichaam verdeelt'
+    ],
+    correct:1,
+    explain:'F geeft aan hoeveel van de toegediende werkzame stof de algemene circulatie bereikt en dus voor werking beschikbaar komt, ten opzichte van intraveneuze toediening van diezelfde dosis. F loopt van 0 (niets beschikbaar) tot 1 (alles beschikbaar). Het verlies (1−F)×100% kan ontstaan door onvolledige afgifte uit de toedieningsvorm, gedeeltelijke absorptie of afbraak bij first-pass.'
+  },
+  {
+    type:'multi', domain:'Absorptie',
+    q:'Welke factoren kunnen bijdragen aan een verlaagde biologische beschikbaarheid bij orale toediening? (meerdere antwoorden mogelijk)',
+    options:[
+      'Onvolledig vrijkomen van de werkzame stof uit de toedieningsvorm',
+      'Afbraak van de werkzame stof door de lever bij eerste passage (first-pass effect)',
+      'Actief transport terug naar het darmlumen via efflux-transporters',
+      'Toediening van het geneesmiddel via een rechtstreekse intraveneuze injectie'
+    ],
+    correct:[0,1,2],
+    explain:'Verlies van werkzame stof (uitgedrukt als 1−F) ontstaat bij orale toediening door drie hoofdmechanismen: onvolledig vrijkomen uit de toedieningsvorm, gedeeltelijke absorptie doordat efflux-transporters de stof terugpompen naar het darmlumen, en afbraak in darm of lever bij de eerste passage. Bij intraveneuze toediening wordt de darm-leverpassage volledig omzeild, waardoor F per definitie gelijk is aan 1.'
+  },
+  {
+    type:'match', domain:'Farmacokinetische parameters',
+    q:'Koppel elk begrip aan de juiste definitie. Klik eerst op een begrip links, en daarna op de bijbehorende definitie rechts.',
+    left:['Cmax','Tmax','AUC','T1/2'],
+    right:[
+      'Tijd nodig om de helft van het farmacon te elimineren',
+      'Totale blootstelling van het lichaam aan het farmacon over tijd',
+      'Maximale concentratie in het bloed bij een specifieke dosis',
+      'Tijd tot de maximale concentratie is bereikt'
+    ],
+    correctMap:[2,3,1,0],
+    explain:'Cmax is de piekconcentratie die in het bloed wordt bereikt; Tmax is het tijdstip waarop die piek optreedt (wanneer absorptiesnelheid = eliminatiesnelheid); AUC is de oppervlakte onder de concentratie-tijdcurve en weerspiegelt de totale blootstelling; T1/2 is de tijd die nodig is om de concentratie te halveren via eliminatie.'
+  },
+  {
+    type:'order', domain:'ADME',
+    q:'Zet de fasen van de klassieke ADME-reis van een geneesmiddel in de juiste volgorde.',
+    items:['Absorptie','Distributie','Metabolisme','Eliminatie'],
+    correctOrder:[0,1,2,3],
+    explain:'De klassieke volgorde is Absorptie → Distributie → Metabolisme → Eliminatie. In werkelijkheid overlappen deze fasen: metabolisme en eliminatie beginnen al zodra de distributiefase op gang komt, en eliminatie loopt zelfs vanaf het moment van absorptie al mee. Voor het begrijpen van de concentratie-tijdcurve is deze volgorde echter de bruikbare basis.'
+  },
+  {
+    type:'hotspot', domain:'Farmacokinetische parameters',
+    q:'Klik op het punt van de concentratie-tijdcurve waar de Tmax is bereikt.',
+    points:[
+      {x:140,y:150,label:'A'},
+      {x:260,y:40,label:'B'},
+      {x:420,y:170,label:'C'}
+    ],
+    correctIdx:1,
+    explain:'Tmax is het moment waarop de absorptiesnelheid gelijk wordt aan de eliminatiesnelheid, en de curve dus zijn hoogste punt (Cmax) bereikt. Punt B ligt op de top van de curve. Vóór dit punt (A) overheerst absorptie en stijgt de concentratie nog; na dit punt (C) overheerst eliminatie en daalt de concentratie weer.'
+  },
+  {
+    type:'open', domain:'Metabolisme',
+    q:'Wat is een prodrug? Geef het voorbeeld dat in de stof genoemd wordt.',
+    model:'Een prodrug is een farmacon dat pas werkzaam wordt nadat het in de lever chemisch is omgezet (gemetaboliseerd) tot een actieve metaboliet. Voorbeeld uit de stof: enalapril (een bloeddrukverlager), dat door leverenzymen wordt omgezet in het actieve enalaprilaat. Omdat de activatie in de lever plaatsvindt, bestaat er geen injectie of zetpil van enalapril — bij die toedieningsvormen zou het middel de lever onvoldoende bereiken om geactiveerd te worden.',
+    explain:'Vergelijk je antwoord met het modelantwoord en beoordeel eerlijk of de kern — activering pas ná omzetting in de lever, plus het juiste voorbeeld (enalapril → enalaprilaat) — aanwezig was.'
+  },
+  {
+    type:'single', domain:'Metabolisme',
+    q:'Waarom bestaat er geen injectie of zetpil van de prodrug enalapril?',
+    options:[
+      'Omdat enalapril dan veel te snel zou gaan werken',
+      'Omdat het dan onvoldoende de lever bereikt om geactiveerd te worden',
+      'Omdat enalapril dan niet meer oplosbaar zou zijn',
+      'Omdat de nieren enalapril dan niet meer kunnen uitscheiden'
+    ],
+    correct:1,
+    explain:'Enalapril moet via de darm-leverroute passeren om door leverenzymen te worden omgezet in het actieve enalaprilaat. Bij een andere toedieningsvorm dan oraal (bijvoorbeeld injectie of zetpil) bereikt het middel de lever onvoldoende, waardoor activering achterwege blijft en er weinig klinisch effect te verwachten is.'
+  },
+  {
+    type:'single', domain:'Farmacokinetische parameters',
+    q:'Acetylsalicylzuur heeft een halfwaardetijd van 20 minuten. Na hoeveel minuten is nog 25% van de oorspronkelijke hoeveelheid aanwezig?',
+    options:['20 minuten','40 minuten','60 minuten','80 minuten'],
+    correct:1,
+    explain:'Eliminatie verloopt volgens eerste-orde kinetiek: per halfwaardetijd wordt telkens de helft van de resterende hoeveelheid geklaard. Na één halfwaardetijd (20 min) is nog 50% over; na twee halfwaardetijden (40 min) is dat nogmaals gehalveerd tot 25%.'
+  },
+  {
+    type:'single', domain:'Toedieningsvormen',
+    q:'Meropenem wordt ingezet bij sepsis. Welke toedieningsvorm heeft hierbij de voorkeur?',
+    options:['Oraal','Rectaal','Intraveneus','Subcutaan'],
+    correct:2,
+    explain:'Bij sepsis is snelheid cruciaal. Intraveneuze toediening komt direct in de bloedsomloop terecht, zonder de vertraging van absorptie via maag, darm, spier of huid, en levert zo het snelst een hoge, betrouwbare bloedspiegel op.'
+  },
+  {
+    type:'single', domain:'Chemische eigenschappen',
+    q:'Nitrofurantoine wordt gebruikt bij urineweginfecties. Op basis van de werkingsplek verwacht je dat dit middel:',
+    options:[
+      'Vooral lipofiel (vetminnend) is',
+      'Vooral hydrofiel (waterminnend) is',
+      'Geen duidelijke voorkeur heeft',
+      'Vrijwel volledig eiwitgebonden is'
+    ],
+    correct:1,
+    explain:'De blaas verzamelt urine, een waterige vloeistof. Een antibioticum dat hier moet werken en via de urine wordt uitgescheiden, is idealiter hydrofiel: dat maakt het beter oplosbaar in en uitscheidbaar met de urine, waardoor het lokaal een effectieve concentratie kan opbouwen.'
+  },
+  {
+    type:'case', domain:'Leverfunctiestoornissen',
+    vignette:'Een patiënt met levercirrose heeft hypoalbuminemie en gebruikt fenytoïne, een sterk eiwitgebonden geneesmiddel.',
+    q:'Wat gebeurt er met fenytoïne bij deze patiënt?',
+    options:[
+      'Er verandert niets, want albumine bindt fenytoïne niet',
+      'De vrije fractie van fenytoïne neemt toe, met meer bijwerkingsrisico',
+      'Fenytoïne wordt inactief zodra het niet meer aan albumine bindt',
+      'Fenytoïne wordt door de nieren juist sneller uitgescheiden'
+    ],
+    correct:1,
+    explain:'Albumine bindt geneesmiddelen in het bloed; alleen de vrije (ongebonden) fractie is farmacologisch actief. Bij hypoalbuminemie is er minder albumine beschikbaar om sterk eiwitgebonden middelen zoals fenytoïne te binden, waardoor de vrije fractie toeneemt. Dit vergroot het risico op bijwerkingen en toxiciteit, ook al blijft de totale (gebonden + vrije) plasmaconcentratie soms gelijk.'
+  },
+  {
+    type:'single', domain:'Leverfunctiestoornissen',
+    q:'Hoe beïnvloedt ascites de werking van het hydrofiele antibioticum ceftriaxon?',
+    options:[
+      'Ascites vergroot het verdelingsvolume, waardoor een hogere dosis nodig kan zijn',
+      'Ascites verlaagt de eiwitbinding, waardoor het middel sneller wordt uitgescheiden',
+      'Ceftriaxon verdeelt zich sterker in vetweefsel bij ascites',
+      'Ascites heeft geen merkbare invloed op de werking van ceftriaxon'
+    ],
+    correct:0,
+    explain:'Ascites is een ophoping van vocht in de buikholte en vergroot daarmee het extravasculaire, hydrofiele compartiment van het lichaam. Omdat ceftriaxon hydrofiel is, verdeelt het zich mede over dit vergrote compartiment: het verdelingsvolume neemt toe, de bloedspiegel kan dalen, en er is mogelijk een hogere dosis nodig om dezelfde effectieve concentratie te bereiken.'
+  },
+  {
+    type:'single', domain:'Leverfunctiestoornissen',
+    q:'Wat gebeurt er met de prodrug clopidogrel bij verminderde CYP-enzymactiviteit door leverfunctiestoornissen?',
+    options:[
+      'Clopidogrel wordt sneller geactiveerd, met verhoogd bloedingsrisico',
+      'Clopidogrel blijft ongewijzigd actief, want het heeft geen CYP-enzymen nodig',
+      'Clopidogrel wordt direct uitgescheiden zonder effect op de stolling',
+      'Clopidogrel wordt onvoldoende geactiveerd, met verhoogd trombose-risico'
+    ],
+    correct:3,
+    explain:'Clopidogrel is zelf niet werkzaam; het moet in de lever door CYP2C19 worden omgezet in zijn actieve metaboliet om bloedplaatjes te remmen. Bij verminderde CYP-enzymactiviteit, zoals bij leverfunctiestoornissen kan voorkomen, wordt minder actieve metaboliet gevormd. De bloedplaatjesremming schiet dan tekort, wat het risico op stolselvorming (trombose) verhoogt.'
+  },
+  {
+    type:'single', domain:'Leverfunctiestoornissen',
+    q:'Welk geneesmiddel wordt sterker beïnvloed door een verminderde leverfunctie: propranolol (hoog first-pass effect) of lorazepam (laag first-pass effect)?',
+    options:['Lorazepam','Propranolol','Beide ongeveer evenveel','Geen van beide'],
+    correct:1,
+    explain:'Propranolol ondergaat normaal een groot first-pass effect: een aanzienlijk deel wordt bij eerste passage door de lever afgebroken voordat het de systemische circulatie bereikt. Bij een verminderde leverfunctie valt die afbraak grotendeels weg, waardoor veel meer onveranderd propranolol in de bloedbaan terechtkomt. Lorazepam heeft van nature al een laag first-pass effect en wordt daardoor minder beïnvloed door leverfunctiestoornissen.'
+  },
+  {
+    type:'multi', domain:'Nierfunctiestoornissen',
+    q:'Welke ADME-processen worden het sterkst beïnvloed door een nierfunctiestoornis? (meerdere antwoorden mogelijk)',
+    options:['Absorptie','Distributie','Metabolisme','Eliminatie'],
+    correct:[1,3],
+    explain:'De nier speelt geen rol bij de opname van een geneesmiddel in het bloed (absorptie) of bij de chemische omzetting ervan (metabolisme, vooral een leverproces). Wel kan bij ernstige nierfunctiestoornissen albumineverlies via de urine optreden, wat de distributie beïnvloedt (meer vrije, actieve fractie van eiwitgebonden middelen). Het meest direct getroffen proces is echter de eliminatie zelf, omdat de nieren de belangrijkste route voor renale klaring vormen.'
+  },
+  {
+    type:'single', domain:'Morbide obesitas',
+    q:'Welk farmacokinetisch proces wordt het sterkst beïnvloed door morbide obesitas?',
+    options:['Absorptie','Distributie','Metabolisme','Eliminatie'],
+    correct:1,
+    explain:'Distributie wordt bij morbide obesitas het sterkst beïnvloed. Dit komt door een combinatie van factoren: een toegenomen bloedvolume, hartminuutvolume, vetmassa en vetvrije massa, samen met een verminderde weefseldoorbloeding die de penetratie van geneesmiddelen in vetweefsel kan bemoeilijken. Het effect verschilt sterk tussen individuen en tussen lipofiele en hydrofiele middelen, waardoor het lastig te voorspellen blijft.'
+  },
+  {
+    type:'single', domain:'Morbide obesitas',
+    q:'Waar moet je op letten bij het doseren van antibiotica bij een patiënt met morbide obesitas en een lokale infectie?',
+    options:[
+      'Altijd gewoon de standaarddosering blijven aanhouden',
+      'De dosering verlagen, want het middel stapelt in vetweefsel',
+      'De dosering mogelijk verhogen voor voldoende weefselconcentratie',
+      'De dosering uitsluitend baseren op de nierfunctie alleen'
+    ],
+    correct:2,
+    explain:'Bij morbide obesitas is de weefseldoorbloeding vaak minder goed, waardoor antibiotica moeilijker doordringen tot het geïnfecteerde weefsel. Om ondanks die verminderde penetratie toch een effectieve concentratie op de infectieplek te bereiken, is soms juist een hogere dosis nodig dan de standaarddosering.'
+  },
+  {
+    type:'open', domain:'Nierfunctiestoornissen',
+    q:'Leg uit waarom albumineverlies via de urine bij ernstige nierfunctiestoornissen het risico op bijwerkingen kan verhogen.',
+    model:'Albumine bindt geneesmiddelen in het bloed; alleen de vrije (ongebonden) fractie is farmacologisch actief en kan receptoren activeren, worden gemetaboliseerd of uitgescheiden. Bij ernstige nierfunctiestoornissen kan albumine via de urine verloren gaan, waardoor het albuminegehalte in het bloed daalt. Er is dan minder albumine beschikbaar om aan te binden, waardoor de vrije, actieve fractie van sterk eiwitgebonden geneesmiddelen toeneemt — met een verhoogd risico op bijwerkingen en toxiciteit als gevolg.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam de keten minder albumine → minder binding → grotere vrije fractie → meer effect/toxiciteit duidelijk naar voren?'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
