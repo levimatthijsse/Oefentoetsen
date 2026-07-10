@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Farmacodynamiek · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Farmacodynamiek · Oefentoets</div>
+      <h1>Farmacodynamiek</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 19</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const FIG_ABCD = `<svg class="hotspot-svg" viewBox="0 0 500 200">
+  <line x1="40" y1="170" x2="470" y2="170" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="40" y1="15" x2="40" y2="170" stroke="var(--line)" stroke-width="1.5"/>
+  <path d="M40,168 C100,168 120,82 150,80 C200,78 250,80 470,80" fill="none" stroke="#8A5A78" stroke-width="2.5"/>
+  <path d="M40,168 C160,168 200,22 230,20 C280,18 330,20 470,20" fill="none" stroke="var(--navy)" stroke-width="2.5"/>
+  <path d="M40,168 C200,168 250,22 280,20 C330,18 380,20 470,20" fill="none" stroke="#5B7B8C" stroke-width="2.5"/>
+  <path d="M40,168 C280,168 350,22 380,20 C420,18 450,20 470,20" fill="none" stroke="var(--gold)" stroke-width="2.5"/>
+  <text class="hotspot-label" x="150" y="72" fill="#8A5A78" font-weight="700">B</text>
+  <text class="hotspot-label" x="230" y="14" fill="var(--navy)" font-weight="700">A</text>
+  <text class="hotspot-label" x="280" y="14" fill="#5B7B8C" font-weight="700">D</text>
+  <text class="hotspot-label" x="380" y="14" fill="var(--gold)" font-weight="700">C</text>
+  <text class="hotspot-label" x="8" y="12">% respons</text>
+  <text class="hotspot-label" x="150" y="188">concentratie agonist (log) →</text>
+</svg>`;
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Receptorfarmacologie',
+    q:'Wat is een receptor, zoals gedefinieerd in de farmacologie?',
+    options:[
+      'Een eiwitmolecuul dat lichaamseigen signalen herkent en erop reageert',
+      'Een enzym dat uitsluitend geneesmiddelen chemisch afbreekt in de lever',
+      'Een ionkanaal dat alleen in zenuwcellen wordt aangetroffen',
+      'Een transporteiwit dat stoffen actief het lichaam uit pompt'
+    ],
+    correct:0,
+    explain:'Een receptor is een eiwitmolecuul met als functie het herkennen van en reageren op lichaamseigen chemische signalen. Naast lichaamseigen stoffen kunnen ook geneesmiddelen van buitenaf aan zo\'n receptor binden, wat resulteert in activatie (agonisme) of blokkade (antagonisme).'
+  },
+  {
+    type:'match', domain:'Typen receptoren',
+    q:'Koppel elk receptortype aan de juiste werking en snelheid. Klik eerst links, dan rechts.',
+    left:['Ionotrope receptor','GPCR','Kinase-gekoppelde receptor','Nucleaire receptor'],
+    right:[
+      'Opent direct een ionkanaal; werkt binnen milliseconden',
+      'Werkt via een G-eiwit naar intracellulaire effectoren; reageert in seconden',
+      'Activeert via fosforylering de gentranscriptie; effect ontstaat in uren',
+      'Bevindt zich in de cel en reguleert direct de gentranscriptie; uren tot dagen'
+    ],
+    correctMap:[0,1,2,3],
+    explain:'Ionotrope receptoren (ligand-gestuurde ionkanalen) reageren het snelst omdat ze direct een kanaal openen. GPCRs werken via intracellulaire signaaltransductie en zijn iets trager. Kinase-gekoppelde en nucleaire receptoren beïnvloeden uiteindelijk de gentranscriptie, wat aanzienlijk meer tijd kost — van uren tot zelfs dagen.'
+  },
+  {
+    type:'order', domain:'Typen receptoren',
+    q:'Zet de vier receptortypen op volgorde van snelste naar traagste respons.',
+    items:['Ionotrope receptor (ligand-gestuurd ionkanaal)','G-eiwitgekoppelde receptor (GPCR)','Kinase-gekoppelde receptor','Nucleaire receptor'],
+    correctOrder:[0,1,2,3],
+    explain:'Ionotrope receptoren openen direct een ionkanaal en werken binnen milliseconden. GPCRs schakelen via een G-eiwit intracellulaire systemen in, wat seconden kost. Kinase-gekoppelde receptoren beïnvloeden gentranscriptie via fosforylering (uren), en nucleaire receptoren reguleren gentranscriptie nog trager, over uren tot dagen.'
+  },
+  {
+    type:'single', domain:'Typen receptoren',
+    q:'Waarom bevatten zenuwcellen relatief veel ligand-gestuurde ionkanalen en weinig nucleaire receptoren?',
+    options:[
+      'Responsen zoals reflexen moeten razendsnel verlopen, en ionkanalen reageren het snelst',
+      'Nucleaire receptoren komen uitsluitend voor in spier- en leverweefsel',
+      'Ionkanalen zijn de enige receptoren die aan geneesmiddelen kunnen binden',
+      'Zenuwcellen bevatten te weinig DNA voor nucleaire receptorwerking'
+    ],
+    correct:0,
+    explain:'Responsen in zenuwcellen, zoals bij een reflex, moeten binnen milliseconden verlopen. Ionkanalen openen direct bij ligandbinding en zijn daarom uitermate geschikt voor snelle synaptische transmissie. Nucleaire receptoren reguleren gentranscriptie, een proces dat inherent traag is (uren tot dagen) en dus ongeschikt voor snelle reflexen.'
+  },
+  {
+    type:'single', domain:'Agonisten',
+    q:'Een volle agonist kan het maximale effect (Emax) al bereiken bij minder dan 100% receptorbezetting. Hoe noemen we dit fenomeen?',
+    options:[
+      'Een receptorreserve, ook wel spare receptors',
+      'Receptordesensitisatie door langdurige agonistblootstelling',
+      'Partiële agonisme binnen het betrokken weefsel',
+      'Allosterische activatie van de receptor zelf'
+    ],
+    correct:0,
+    explain:'Wanneer een volle agonist het maximale biologische effect al bereikt bij minder dan 100% receptorbezetting, spreekt men van een receptorreserve of "spare receptors". Dit betekent dat niet alle receptoren tegelijk bezet hoeven te zijn om het maximale effect te realiseren.'
+  },
+  {
+    type:'single', domain:'Agonisten',
+    q:'Wat onderscheidt een partiële agonist van een volle agonist?',
+    options:[
+      'Een partiële agonist bindt nooit daadwerkelijk aan de receptor',
+      'Een partiële agonist bereikt zelfs bij volledige bezetting niet Emax',
+      'Een partiële agonist werkt uitsluitend op nucleaire receptoren',
+      'Een partiële agonist heeft per definitie een hogere potentie'
+    ],
+    correct:1,
+    explain:'Een partiële agonist schiet tekort in effectiviteit: zelfs bij 100% receptorbezetting bereikt deze niet het maximale effect (Emax) dat een volle agonist kan veroorzaken. Dit is een andere eigenschap dan potentie, die aangeeft bij welke concentratie een effect optreedt.'
+  },
+  {
+    type:'hotspot', domain:'Potentie en effectiviteit',
+    q:'Klik op het punt van de concentratie-effectcurve dat de EC50 markeert.',
+    points:[
+      {x:90,y:175,label:'A'},
+      {x:150,y:110,label:'B'},
+      {x:300,y:40,label:'C'}
+    ],
+    correctIdx:1,
+    explain:'De EC50 is de concentratie waarbij de helft van het maximale effect (Emax) wordt bereikt — dit komt overeen met het buigpunt van de sigmoïdale curve, halverwege de stijgende flank. Punt A ligt nog in het vlakke beginstuk (weinig respons), punt C ligt al in het plateau (bijna Emax).'
+  },
+  {
+    type:'single', domain:'Potentie en effectiviteit',
+    figure:FIG_ABCD,
+    q:'Bekijk de curve hierboven. Welke agonist is het meest potent (heeft de hoogste pEC50)?',
+    options:['Agonist A','Agonist B','Agonist C','Agonist D'],
+    correct:1,
+    explain:'Potentie wordt bepaald door de EC50 (of pEC50): hoe lager de concentratie die nodig is voor een halfmaximaal effect, hoe potenter de stof. Agonist B bereikt zijn buigpunt bij de laagste concentratie (meest naar links) en is dus het meest potent — ook al ligt het maximale effect van B lager dan dat van A, C en D.'
+  },
+  {
+    type:'single', domain:'Potentie en effectiviteit',
+    figure:FIG_ABCD,
+    q:'Bekijk dezelfde curve. Welke agonist(en) zijn het meest effectief (hebben de hoogste Emax)?',
+    options:['Alleen agonist A','Alleen agonist B','Agonisten A, C en D samen','Agonisten B, C en D samen'],
+    correct:2,
+    explain:'Effectiviteit wordt bepaald door Emax, het maximale effect dat een stof kan bereiken — onafhankelijk van de benodigde concentratie. Agonisten A, C en D bereiken alle drie hetzelfde (hoogste) plateau en zijn dus even effectief. Agonist B bereikt zijn effect weliswaar bij de laagste concentratie (is het meest potent), maar het plateau van B ligt lager.'
+  },
+  {
+    type:'open', domain:'Ligand binding',
+    q:'Waarom zijn concentratie-effectcurves ongeschikt om de receptoraffiniteit (K-waarde) van een stof te bepalen?',
+    model:'De biologische respons is zelden direct evenredig aan de receptorbezetting, onder andere door het bestaan van een receptorreserve. Daarnaast verschilt de bekende concentratie in een testvloeistof vaak van de werkelijke concentratie rond de receptor: door enzymatische afbraak (zoals bij acetylcholine) of actieve cellulaire opname (zoals bij noradrenaline) bereikt soms minder dan 1% van de stof daadwerkelijk de receptor.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwamen zowel de non-lineaire relatie tussen bezetting en effect (receptorreserve) als het verschil tussen bekende en werkelijke receptorconcentratie (afbraak/opname) aan bod?'
+  },
+  {
+    type:'single', domain:'Potentie en effectiviteit',
+    q:'Een agonist met een pEC50 van 9 is hoe potent ten opzichte van een agonist met een pEC50 van 8?',
+    options:['Tien keer potenter','Tien keer minder potent','Twee keer potenter','Even potent'],
+    correct:0,
+    explain:'De pEC50 is het negatieve logaritme van de EC50. Elk verschil van 1 op de pEC50-schaal komt overeen met een factor 10 in concentratie. Een pEC50 van 9 betekent dus een tien keer lagere (en dus potentere) concentratie dan bij een pEC50 van 8.'
+  },
+  {
+    type:'single', domain:'Antagonisten',
+    q:'Wat houdt "reversibel competitief antagonisme" in?',
+    options:[
+      'De antagonist bindt dezelfde plek als de agonist en kan loslaten',
+      'De antagonist bindt permanent en onomkeerbaar aan een aparte bindingsplaats',
+      'De antagonist werkt alleen in aanwezigheid van hoge agonistconcentraties',
+      'De antagonist verhoogt juist de effectiviteit van de agonist'
+    ],
+    correct:0,
+    explain:'Reversibel wil zeggen dat de binding omkeerbaar is: de antagonist kan ook weer van de receptor loslaten. Competitief betekent dat agonist en antagonist om dezelfde bindingsplaats strijden. Hierdoor kan een overmaat aan agonist de antagonist geleidelijk verdringen, waardoor alsnog hetzelfde maximale effect bereikt kan worden.'
+  },
+  {
+    type:'case', domain:'Schild-plot',
+    vignette:'In een experiment wordt de werking van isoprenaline (bètareceptoragonist) gemeten in aan- en afwezigheid van propranolol (bètareceptorantagonist), bij oplopende antagonistconcentraties.',
+    q:'Wat gebeurt er met de concentratie-effectcurve van isoprenaline naarmate de propranololconcentratie toeneemt?',
+    options:[
+      'De curve schuift parallel naar rechts, met hetzelfde maximale effect',
+      'De curve schuift naar links, met een lager maximaal effect',
+      'De curve blijft exact op dezelfde plek staan',
+      'Het maximale effect verdwijnt volledig bij elke concentratie'
+    ],
+    correct:0,
+    explain:'Bij reversibel competitief antagonisme schuiven de curves parallel naar rechts: er is steeds meer agonist nodig om hetzelfde effect te bereiken, maar het maximale effect (Emax) blijft uiteindelijk haalbaar omdat de antagonist verdrongen kan worden door voldoende agonist toe te voegen.'
+  },
+  {
+    type:'single', domain:'Schild-plot',
+    q:'Bij 10 nM propranolol is de EC50 van isoprenaline 7,9×10⁻⁹ M; zonder antagonist is deze 5×10⁻¹⁰ M. Wat is de Dosis Ratio (DR)?',
+    options:['Ongeveer 1,6','Ongeveer 7,9','Ongeveer 15,8','Ongeveer 158'],
+    correct:2,
+    explain:'De Dosis Ratio is de verhouding tussen de EC50 mét en zonder antagonist: 7,9×10⁻⁹ gedeeld door 5×10⁻¹⁰ komt neer op ongeveer 15,8. Dit getal wordt vervolgens gebruikt om het bijbehorende punt in de Schild-plot te berekenen.'
+  },
+  {
+    type:'single', domain:'Schild-plot',
+    q:'Wat is log(DR − 1) wanneer de Dosis Ratio (DR) 252 bedraagt?',
+    options:['Ongeveer 1,40','Ongeveer 2,00','Ongeveer 2,40','Ongeveer 5,52'],
+    correct:2,
+    explain:'DR − 1 = 252 − 1 = 251, en log(251) ≈ 2,40. Deze waarde vormt het y-coördinaat voor het bijbehorende punt in de Schild-plot, bij de betreffende antagonistconcentratie op de x-as.'
+  },
+  {
+    type:'open', domain:'Schild-plot',
+    q:'Wat toont een Schild-plot met een helling (slope) van exact 1 aan?',
+    model:'Een helling van exact 1 bewijst dat er sprake is van zuiver reversibel competitief antagonisme: de antagonist en agonist concurreren om precies dezelfde bindingsplaats op één enkel receptortype, en de antagonist kan door een overmaat agonist worden verdrongen.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam het begrip "reversibel competitief antagonisme op één receptortype" duidelijk naar voren?'
+  },
+  {
+    type:'single', domain:'Schild-plot',
+    q:'Wat betekent het als de helling van een Schild-plot afwijkt van de waarde 1?',
+    options:[
+      'Er zijn waarschijnlijk meerdere receptortypen bij de binding betrokken',
+      'De antagonist bindt dan onomkeerbaar aan de receptor',
+      'Er is dan te weinig agonist toegevoegd aan het experiment',
+      'De proef moet dan met een hogere dosis herhaald worden'
+    ],
+    correct:0,
+    explain:'Uit migraine-onderzoek blijkt dat wanneer de helling van een Schild-plot afwijkt van 1, er stiekem meerdere receptortypen betrokken zijn bij de binding van de antagonist. Dit kan later verklaren waarom een middel onverwachte bijwerkingen veroorzaakt, en helpt onderzoekers selectievere middelen te ontwikkelen.'
+  },
+  {
+    type:'single', domain:'Schild-plot',
+    q:'Welke bewering over de pA2-waarde is waar?',
+    options:[
+      'Een antagonist met pA2 9 verschuift de curve 10× naar rechts bij 9 nM',
+      'Een antagonist met pA2 8 verschuift de curve 10× naar rechts bij 10 nM',
+      'Een antagonist met pA2 9 verschuift de curve 2× naar rechts bij 1 nM',
+      'Een antagonist met pA2 8 verschuift de curve 2× naar rechts bij 8 nM'
+    ],
+    correct:2,
+    explain:'De pA2 is de negatieve logaritme van de antagonistconcentratie waarbij precies twee keer zoveel agonist nodig is voor hetzelfde effect (DR = 2). Een pA2 van 9 komt overeen met een concentratie van 10⁻⁹ M (1 nM), waarbij de curve met een factor 2 naar rechts verschuift.'
+  },
+  {
+    type:'match', domain:'Antagonisten',
+    q:'Koppel elk type modulator aan het effect op de concentratie-effectcurve van de agonist.',
+    left:['Competitieve antagonist','Allosterische activator','Allosterische inhibitor'],
+    right:[
+      'Verschuift de curve naar rechts, Emax blijft uiteindelijk gelijk',
+      'Verhoogt de gevoeligheid en/of het effect van de agonist',
+      'Verlaagt het maximale effect (Emax) van de agonist'
+    ],
+    correctMap:[0,1,2],
+    explain:'Een competitieve antagonist grijpt aan op dezelfde bindingsplaats als de agonist en verschuift de curve naar rechts, zonder Emax blijvend te verlagen (bij voldoende agonist is het effect nog haalbaar). Allosterische modulatoren grijpen aan op een andere plek op de receptor: een activator versterkt het effect van de agonist, terwijl een inhibitor het maximale effect juist verlaagt.'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  if(qd.figure) html += qd.figure;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
