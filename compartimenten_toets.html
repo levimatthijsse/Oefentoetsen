@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Lichaamscompartimenten · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Lichaamscompartimenten · Oefentoets</div>
+      <h1>Lichaamscompartimenten</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 20</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const FIG_IVORAL = `<svg class="hotspot-svg" viewBox="0 0 500 200">
+  <line x1="40" y1="175" x2="470" y2="175" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="40" y1="15" x2="40" y2="175" stroke="var(--line)" stroke-width="1.5"/>
+  <path d="M40,25 C120,60 200,110 300,140 C380,155 430,163 470,168" fill="none" stroke="var(--navy)" stroke-width="2.5"/>
+  <path d="M40,168 C100,168 140,80 180,65 C260,90 350,130 470,165" fill="none" stroke="var(--gold)" stroke-width="2.5"/>
+  <text class="hotspot-label" x="45" y="30" fill="var(--navy)" font-weight="700">IV</text>
+  <text class="hotspot-label" x="165" y="58" fill="var(--gold)" font-weight="700">Oraal</text>
+  <text class="hotspot-label" x="8" y="12">concentratie</text>
+  <text class="hotspot-label" x="200" y="193">tijd →</text>
+</svg>`;
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Lichaamscompartimenten',
+    q:'Uit welke twee compartimenten bestaat de extracellulaire vloeistof?',
+    options:[
+      'Plasma samen met het interstitiële vocht tussen cellen',
+      'Plasma samen met het intracellulaire vocht in cellen',
+      'Interstitieel vocht samen met transcellulair vocht zoals liquor',
+      'Intracellulair vocht samen met transcellulair vocht zoals liquor'
+    ],
+    correct:0,
+    explain:'Plasma en interstitieel vocht vormen samen de extracellulaire vloeistof — het vocht buiten de lichaamscellen. Intracellulair vocht (binnen de cellen) en transcellulair vocht (zoals liquor, intraoculair en peritoneaal vocht) zijn hier expliciet van te onderscheiden.'
+  },
+  {
+    type:'match', domain:'Lichaamscompartimenten',
+    q:'Koppel elk compartiment aan het bijbehorende aandeel en de beschrijving.',
+    left:['Plasma','Interstitieel vocht','Intracellulair vocht','Transcellulair vocht'],
+    right:[
+      'Het vloeibare deel van het bloed, ~4,5% van het lichaamsgewicht',
+      'Vocht tussen de cellen buiten de bloedvaten, ~16%',
+      'Het vocht binnen alle lichaamscellen samen, ~30-40%',
+      'Liquor, intraoculair en peritoneaal vocht e.d., ~2,5%'
+    ],
+    correctMap:[0,1,2,3],
+    explain:'Lichaamswater is verdeeld over vier compartimenten met een vast aandeel van het lichaamsgewicht: plasma (~4,5%), interstitieel vocht (~16%), intracellulair vocht (~30-40%, het grootste aandeel) en transcellulair vocht (~2,5%, zoals liquor en peritoneaal vocht).'
+  },
+  {
+    type:'single', domain:'Lichaamscompartimenten',
+    q:'Welke vorm van een geneesmiddel kan compartimenten daadwerkelijk passeren?',
+    options:[
+      'Alleen de vrije, ongeladen vorm van het middel',
+      'Alleen de vorm die aan eiwit gebonden is',
+      'Alleen de geladen, geïoniseerde vorm van het middel',
+      'Zowel de vrije als de eiwitgebonden vorm samen'
+    ],
+    correct:0,
+    explain:'Een geneesmiddel komt in elk compartiment voor in vrije en gebonden vorm, en — als het een zwak zuur of base is — in een evenwicht tussen geladen en ongeladen vorm. Alleen het vrije, ongeladen geneesmiddel kan compartimenten daadwerkelijk passeren.'
+  },
+  {
+    type:'single', domain:'Bloed-hersenbarrière',
+    q:'Waaruit bestaat de bloed-hersenbarrière voornamelijk?',
+    options:[
+      'Endotheelcellen met tight junctions, pericyten en actieve effluxpompen',
+      'Een enkele laag vetweefsel rondom de bloedvaten',
+      'Uitsluitend passieve poriën die alle stoffen doorlaten',
+      'Een laag bindweefsel zonder actieve transportmechanismen'
+    ],
+    correct:0,
+    explain:'De barrière bestaat uit een aaneengesloten laag endotheelcellen met tight junctions, omgeven door pericyten, aangevuld met actieve effluxpompen die stoffen (waaronder veel wateroplosbare geneesmiddelen) terugpompen. Hierdoor bereiken weinig lipofiele geneesmiddelen de hersenen goed.'
+  },
+  {
+    type:'single', domain:'Bloed-hersenbarrière',
+    q:'Waarom kan penicilline bij bacteriële meningitis wél intraveneus (in plaats van intrathecaal) gegeven worden?',
+    options:[
+      'De ontstoken barrière is beschadigd en dus doorlaatbaarder',
+      'Penicilline wordt door de ontsteking plotseling lipofiel',
+      'De bloed-hersenbarrière verdwijnt dan blijvend en volledig',
+      'Het lichaam maakt door de ontsteking extra effluxpompen aan'
+    ],
+    correct:0,
+    explain:'Bij ontsteking, zoals bacteriële meningitis, raakt de bloed-hersenbarrière beschadigd en dus doorlaatbaarder. Hierdoor kan penicilline — dat normaal slecht hersenpenetrerend is — in die situatie wél intraveneus in plaats van intrathecaal worden toegediend.'
+  },
+  {
+    type:'single', domain:'Lichaamssamenstelling en PK',
+    q:'Iemand met veel vetweefsel en weinig spiermassa krijgt een hydrofiel geneesmiddel. Wat gebeurt er, vergeleken met iemand met veel spiermassa en weinig vet?',
+    options:[
+      'Een hogere plasmaconcentratie, door minder wateroplossend volume',
+      'Een lagere plasmaconcentratie, door meer opslagruimte in vet',
+      'Geen verschil, want vet bindt geen hydrofiele middelen',
+      'Een snellere eliminatie via de nieren door het vet'
+    ],
+    correct:0,
+    explain:'Vetweefsel bevat relatief weinig water. Bij een hydrofiel geneesmiddel, dat zich vooral verdeelt over de waterige compartimenten, leidt een gegeven dosis bij iemand met veel vetweefsel tot een hogere plasmaconcentratie dan bij iemand met veel spiermassa — er is immers minder wateroplossend volume beschikbaar.'
+  },
+  {
+    type:'single', domain:'Lichaamssamenstelling en PK',
+    q:'Morfine heeft een fat:water partitiecoëfficiënt van 0,4, thiopental van ongeveer 10. Wat betekent dit voor stapeling in vetweefsel?',
+    options:[
+      'Thiopental stapelt veel makkelijker op in vet dan morfine',
+      'Morfine stapelt veel makkelijker op in vet dan thiopental',
+      'Beide middelen stapelen ongeveer even makkelijk op in vet',
+      'Geen van beide middelen kan opstapelen in vetweefsel'
+    ],
+    correct:0,
+    explain:'Hoe hoger de fat:water partitiecoëfficiënt, hoe sterker een middel zich verdeelt naar vetweefsel. Thiopental (~10) stapelt daardoor veel makkelijker op in vet dan morfine (0,4) — ondanks dat morfine wel lipofiel genoeg is om de bloed-hersenbarrière te passeren.'
+  },
+  {
+    type:'open', domain:'Verdelingsvolume',
+    q:'Wat is het schijnbare verdelingsvolume (Vd), en waarom mag je dit niet zomaar gelijkstellen aan een specifiek anatomisch compartiment?',
+    model:'Vd is een rekenkundig begrip: het volume dat de totale hoeveelheid geneesmiddel in het lichaam (Q) zou bevatten als die zich overal zou bevinden in een concentratie gelijk aan de gemeten plasmaconcentratie (Cp), dus Vd = Q/Cp. Het is geen echt anatomisch volume. Insuline is het klassieke voorbeeld: het heeft een Vd ongeveer gelijk aan het plasmavolume, maar werkt toch op receptoren in spier-, vet- en levercellen, omdat die receptoren zich op het celoppervlak bevinden en dus al blootstaan aan interstitieel vocht zonder dat insuline de cel in hoeft.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam naar voren dat Vd een rekenkundig (niet-anatomisch) begrip is, en dat een laag Vd niet betekent dat een middel geen effect kan hebben buiten het plasma (zoals bij insuline)?'
+  },
+  {
+    type:'single', domain:'Verdelingsvolume',
+    q:'Vd = Q/Cp. Een patiënt heeft in totaal 80 mg geneesmiddel in het lichaam (Q) bij een plasmaconcentratie van 2 mg/L (Cp). Wat is de Vd?',
+    options:['40 L','160 L','0,025 L','82 L'],
+    correct:0,
+    explain:'Vd = Q/Cp = 80 mg / 2 mg/L = 40 L. Dit is een rekenkundig volume en zegt op zichzelf nog niets over in wélk anatomisch compartiment het geneesmiddel zich daadwerkelijk bevindt.'
+  },
+  {
+    type:'match', domain:'Verdelingsvolume',
+    q:'Koppel elke Vd-categorie aan een bijbehorend voorbeeldgeneesmiddel.',
+    left:['Beperkt tot plasma (~0,05 L/kg)','Extracellulaire vloeistof (~0,2 L/kg)','Totaal lichaamswater (~0,55 L/kg)','Groter dan het lichaamsvolume'],
+    right:['Heparine','Gentamicine','Fenytoïne','Morfine'],
+    correctMap:[0,1,2,3],
+    explain:'Heparine is een groot, sterk eiwitgebonden molecuul en blijft beperkt tot het plasma. Gentamicine is polair en verspreidt zich over de extracellulaire vloeistof. Fenytoïne passeert celmembranen relatief vrij en verdeelt zich over het totale lichaamswater. Morfine is sterk lipofiel/weefselgebonden en heeft daardoor een Vd groter dan het lichaamsvolume.'
+  },
+  {
+    type:'single', domain:'Verdelingsvolume',
+    q:'Waarom worden geneesmiddelen met een zeer hoog Vd (zoals morfine) niet effectief verwijderd met hemodialyse?',
+    options:[
+      'Dialyse filtert alleen plasma, en het middel zit vooral elders',
+      'Deze middelen zijn te klein om door het dialysemembraan te gaan',
+      'Hemodialyse werkt uitsluitend bij hydrofiele geneesmiddelen',
+      'Deze middelen binden juist helemaal niet aan weefsel'
+    ],
+    correct:0,
+    explain:'Hemodialyse filtert alleen het bloedplasma. Bij geneesmiddelen met een zeer hoog Vd, zoals morfine, bevindt het merendeel van de totale hoeveelheid zich echter buiten het plasmacompartiment (in weefsel of vet), waardoor dialyse maar een klein deel van de totale lichaamslading kan verwijderen.'
+  },
+  {
+    type:'case', domain:'Plasma-eiwitbinding',
+    vignette:'Bij de meeste geneesmiddelen blijven de bindingsplaatsen op albumine bij therapeutische doseringen ver van verzadigd. Bij tolbutamide kan de binding echter wél verzadigd raken.',
+    q:'Wat gebeurt er wanneer de bindingsplaatsen voor tolbutamide op albumine verzadigd raken?',
+    options:[
+      'Een dosisverhoging laat de vrije concentratie onevenredig sterk stijgen',
+      'De gebonden fractie blijft daarna altijd precies constant',
+      'Het geneesmiddel wordt daardoor volledig farmacologisch inactief',
+      'Albumine gaat daarna automatisch meer van het middel binden'
+    ],
+    correct:0,
+    explain:'Bij de meeste geneesmiddelen blijft de gebonden fractie ongeveer constant, omdat de bindingsplaatsen op albumine ver van verzadigd zijn. Bij enkele middelen zoals tolbutamide kan de binding echter wél verzadigd raken, waardoor een dosisverhoging de vrije (actieve) concentratie onevenredig sterk laat stijgen.'
+  },
+  {
+    type:'multi', domain:'Plasma-eiwitbinding',
+    q:'Welke van de volgende voorbeelden zijn vormen van weefselaccumulatie, los van het klassieke vetreservoir? (meerdere antwoorden mogelijk)',
+    options:[
+      'Chloroquine hoopt zich op in het netvlies via melanine',
+      'Tetracyclines binden aan calcium in bot en tandweefsel',
+      'Amiodaron hoopt zich sterk op in lever en long',
+      'Insuline hoopt zich op grote schaal op in vetweefsel'
+    ],
+    correct:[0,1,2],
+    explain:'Chloroquine bindt sterk aan melanine en hoopt zich zo op in het netvlies (met oculaire toxiciteit als risico), tetracyclines binden aan calcium in bot en tandweefsel, en amiodaron kan zich sterk ophopen in lever en long. Insuline heeft juist een laag Vd, ongeveer gelijk aan het plasmavolume, en hoopt zich niet op in vetweefsel.'
+  },
+  {
+    type:'single', domain:'Plasmaconcentratiecurve',
+    figure:FIG_IVORAL,
+    q:'Bekijk de curve hierboven. Welke lijn toont géén absorptiefase en daalt al vanaf tijdstip nul?',
+    options:[
+      'De lijn met een directe piek bij t=0 (IV)',
+      'De lijn die geleidelijk stijgt naar een piek (oraal)',
+      'Beide lijnen tonen een duidelijke absorptiefase',
+      'Geen van beide lijnen toont enige vorm van eliminatie'
+    ],
+    correct:0,
+    explain:'Bij een IV-bolus komt het geneesmiddel direct en volledig in de systemische circulatie: er is geen absorptiefase, en de concentratie daalt dus al vanaf tijdstip nul. Bij orale toediening moet het middel eerst door de darmwand worden geabsorbeerd, wat een stijgende fase tot Cmax oplevert vóór de daling begint.'
+  },
+  {
+    type:'single', domain:'Plasmaconcentratiecurve',
+    q:'Wat markeert het tijdstip Tmax bij orale toediening?',
+    options:[
+      'Het moment waarop absorptiesnelheid en eliminatiesnelheid gelijk zijn',
+      'Het moment waarop het geneesmiddel volledig is opgenomen',
+      'Het moment waarop de eliminatie volledig is gestopt',
+      'Het moment vlak vóór de toediening van de dosis'
+    ],
+    correct:0,
+    explain:'Tmax is het tijdstip waarop de piekconcentratie (Cmax) wordt bereikt: het punt waarop de absorptiesnelheid vanuit de darm precies gelijk is geworden aan de eliminatiesnelheid. Ná Tmax overheerst eliminatie en daalt de concentratie weer.'
+  },
+  {
+    type:'hotspot', domain:'Herhaalde toediening',
+    q:'Klik op het gebied van de curve waar sprake is van steady state.',
+    path:'M30,200 L60,110 L90,165 L120,85 L150,145 L180,65 L210,125 L240,55 L270,115 L300,55 L330,115 L360,55 L390,115 L420,55 L450,115 L470,65',
+    axisLabel:'opeenvolgende doses →',
+    points:[
+      {x:90,y:140,label:'A'},
+      {x:390,y:85,label:'B'}
+    ],
+    correctIdx:1,
+    explain:'Bij herhaalde toediening stapelt de plasmaconcentratie zich eerst op, omdat elke nieuwe dosis wordt gegeven vóórdat de vorige volledig is geëlimineerd (punt A, nog in de accumulatiefase). Zodra de toegediende hoeveelheid per interval gelijk is aan de geëlimineerde hoeveelheid, ontstaat steady state: de concentratie schommelt dan rond een stabiel gemiddelde tussen piek en dal, zoals bij punt B.'
+  },
+  {
+    type:'single', domain:'Herhaalde toediening',
+    q:'Wanneer wordt steady state bereikt bij herhaalde toediening met een vast doseerinterval?',
+    options:[
+      'Als de toegediende hoeveelheid per interval gelijk is aan de geëlimineerde hoeveelheid',
+      'Zodra de allereerste dosis volledig is uitgescheiden',
+      'Zodra de piekconcentratie (Cmax) voor het eerst wordt bereikt',
+      'Nooit; de concentratie blijft bij herhaalde toediening altijd stijgen'
+    ],
+    correct:0,
+    explain:'Steady state is het punt waarop de hoeveelheid geneesmiddel die per doseerinterval wordt toegediend precies gelijk is aan de hoeveelheid die in datzelfde interval wordt geëlimineerd. De plasmaconcentratie schommelt dan tussen een piek en een dal rond een stabiel gemiddelde, in plaats van verder te accumuleren.'
+  },
+  {
+    type:'case', domain:'Geneesmiddelinteracties',
+    vignette:'Digoxine wordt gecombineerd met kinidine, verapamil of amiodaron. Deze middelen verdringen digoxine van weefselbindingsplaatsen én remmen tegelijk de renale excretie ervan.',
+    q:'Waarom is deze combinatie extra risicovol, vergeleken met een gewone eiwitbindingsverdringing zonder verminderde eliminatie?',
+    options:[
+      'De vrije concentratie blijft niet alleen acuut, maar ook chronisch verhoogd',
+      'De verdringing zorgt juist voor een verhoogde eiwitbinding van digoxine',
+      'De combinatie versnelt de eliminatie van digoxine juist extra sterk',
+      'Er is geen verhoogd risico, verdringing is meestal onschadelijk'
+    ],
+    correct:0,
+    explain:'Normaal compenseert het lichaam een verdringingsinteractie door de vrijgekomen stof sneller te elimineren, waardoor de vrije concentratie weer daalt naar het oude niveau. Wanneer de verdringende stof echter tegelijk de eliminatie remt — zoals bij kinidine, verapamil of amiodaron met digoxine — blijft de vrije concentratie niet alleen acuut, maar ook chronisch verhoogd, met een reëel risico op ernstige (digoxine)toxiciteit.'
+  },
+  {
+    type:'single', domain:'Geneesmiddelinteracties',
+    q:'Bij een gewone verdringing van geneesmiddel A van de eiwitbinding door geneesmiddel B treedt meestal compensatie op. Wat gebeurt er hierbij op de langere termijn?',
+    options:[
+      'De totale concentratie van A daalt, de vrije concentratie herstelt zich',
+      'De totale concentratie van A blijft gelijk, de vrije concentratie daalt',
+      'Zowel de totale als de vrije concentratie van A stijgen blijvend',
+      'Geneesmiddel A wordt door de verdringing volledig geïnactiveerd'
+    ],
+    correct:0,
+    explain:'Na verdringing stijgt de vrije concentratie van A eerst acuut, wat normaliter leidt tot versnelde eliminatie. Hierdoor daalt de totale (gebonden + vrije) concentratie van A op de langere termijn, terwijl de vrije concentratie in de nieuwe steady state weer ongeveer terugkeert naar het niveau van vóór de interactie.'
+  },
+  {
+    type:'open', domain:'Geneesmiddelinteracties',
+    q:'Waarom kan eiwitbindingsverdringing van bilirubine bij premature pasgeborenen wél gevaarlijk zijn, ondanks de gebruikelijke compensatiemechanismen?',
+    model:'Bij verdringing van bilirubine door sulfonamiden of andere sterk bindende stoffen stijgt de vrije bilirubineconcentratie acuut. Bij premature pasgeborenen is het bilirubinemetabolisme nog onvolgroeid en is de bloed-hersenbarrière nog niet volledig ontwikkeld, waardoor het vrije bilirubine niet snel genoeg kan worden verwerkt en de hersenen kan bereiken. Dit kan kernicterus veroorzaken, een ernstige vorm van hersenschade.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwamen zowel de onvolgroeide bilirubinemetabolisme als de nog niet volledig ontwikkelde bloed-hersenbarrière bij premature pasgeborenen aan bod, en het gevolg (kernicterus)?'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    const curvePath = qd.path || 'M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180';
+    const axisLabel = qd.axisLabel || 'tijd →';
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="${curvePath}" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">${axisLabel}</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
