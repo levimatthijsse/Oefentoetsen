@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LMV Geneesmiddel van de week · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LMV Geneesmiddel van de week · Oefentoets</div>
+      <h1>Amiodaron · Clopidogrel · Metformine</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 21</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Amiodaron',
+    q:'Tot welke klasse anti-aritmica behoort amiodaron?',
+    options:['Klasse I','Klasse II','Klasse III','Klasse IV'],
+    correct:2,
+    explain:'Amiodaron is een klasse III anti-aritmicum. Deze klasse werkt in op de repolarisatiefase van de actiepotentiaal, wat de refractaire periode verlengt.'
+  },
+  {
+    type:'single', domain:'Amiodaron',
+    q:'Wat is het effect van amiodaron op de refractaire periode en de geleiding in het hart?',
+    options:[
+      'Verlengt de refractaire periode en vertraagt de geleiding',
+      'Verkort de refractaire periode en versnelt de geleiding',
+      'Heeft geen effect op de geleiding, alleen op de refractaire periode',
+      'Versnelt uitsluitend de geleiding via de AV-knoop'
+    ],
+    correct:0,
+    explain:'Amiodaron verlengt de refractaire periode en vertraagt de geleiding, met name in de atria, de ventrikels en de AV-knoop. Door de verlenging van de refractaire periode wordt ook het (gecorrigeerde) QT-interval verlengd.'
+  },
+  {
+    type:'match', domain:'Amiodaron',
+    q:'Koppel elk orgaansysteem aan de bijbehorende bijwerking van amiodaron.',
+    left:['Lever','Huid','Ogen','Longen','Schildklier'],
+    right:[
+      'Stijging van de transaminasewaarden (levertoxiciteit)',
+      'Fotosensibiliteit: roodheid en jeuk bij licht',
+      'Cornea-neerslag, soms gekleurde ringen rond lichtbronnen',
+      'Pulmonale toxiciteit: nieuwe kortademigheid of hoest',
+      'Amiodaron-geïnduceerde thyreotoxicose'
+    ],
+    correctMap:[0,1,2,3,4],
+    explain:'Amiodaron kent een breed bijwerkingenprofiel: levertoxiciteit (transaminasestijging), fotosensibiliteit van de huid, cornea-neerslag in de ogen, pulmonale toxiciteit, en schildklierfunctiestoornissen door het hoge jodiumgehalte (39% op gewichtsbasis).'
+  },
+  {
+    type:'single', domain:'Amiodaron',
+    q:'Amiodaron-geïnduceerde thyreotoxicose type 1 wordt veroorzaakt door...',
+    options:[
+      'Jodiumoverbelasting bij een pre-existente schildklierziekte',
+      'Een destructieve ontsteking van de schildklier zelf',
+      'Een allergische reactie op amiodaron',
+      'Een tekort aan schildklierhormoon door amiodaron'
+    ],
+    correct:0,
+    explain:'Type 1 wordt veroorzaakt door jodiumoverbelasting en treedt met name op bij patiënten met een reeds bestaande schildklierziekte, zoals een struma. Dit type wordt behandeld met schildklierremmende medicatie (thyreostatica).'
+  },
+  {
+    type:'single', domain:'Amiodaron',
+    q:'Hoe wordt amiodaron-geïnduceerde thyreotoxicose type 2 behandeld?',
+    options:[
+      'Amiodaron stoppen en behandelen met prednison',
+      'Thyreostatica starten, amiodaron gewoon voortzetten',
+      'Alleen de amiodarondosis verlagen',
+      'Extra jodiumsuppletie geven'
+    ],
+    correct:0,
+    explain:'Type 2 is een destructieve ontsteking van de schildklier. Hierbij moet amiodaron gestopt worden en wordt de patiënt behandeld met prednison. Door de lange halfwaardetijd leidt stoppen overigens niet meteen tot snel herstel.'
+  },
+  {
+    type:'case', domain:'Amiodaron',
+    vignette:'Een patiënt stopt met amiodaron vanwege bijwerkingen, maar de klachten blijven nog wekenlang aanwezig.',
+    q:'Waarom verdwijnen bijwerkingen van amiodaron niet snel na het stoppen van de medicatie?',
+    options:[
+      'Door de lange halfwaardetijd door stapeling in vetweefsel',
+      'Amiodaron werkt onomkeerbaar op zijn doelreceptoren',
+      'De lever kan amiodaron in het geheel niet afbreken',
+      'De nieren scheiden amiodaron zeer langzaam uit'
+    ],
+    correct:0,
+    explain:'Amiodaron heeft een hoog verdelingsvolume door een hoge weefselaffiniteit, waardoor het na inname vanuit het plasma in weefsel (vooral vetweefsel) wordt "gevangen". Dit geeft een zeer lange gemiddelde halfwaardetijd van 53 dagen, waardoor er ook na stoppen nog een voorraad in het lichaam aanwezig blijft.'
+  },
+  {
+    type:'single', domain:'Amiodaron',
+    q:'Waarom wordt bij het starten van amiodaron eerst een hogere oplaaddosis gegeven?',
+    options:[
+      'Om de weefsels, met hun hoge opnamecapaciteit, te verzadigen',
+      'Om het first-pass metabolisme in de lever te omzeilen',
+      'Om de halfwaardetijd van amiodaron te verkorten',
+      'Om bijwerkingen zo snel mogelijk op te wekken'
+    ],
+    correct:0,
+    explain:'Door het hoge verdelingsvolume wordt in de eerste dagen veel amiodaron "gevangen" in de weefsels. Een hogere oplaaddosis is daarom nodig om deze weefsels te verzadigen, waarna met een lagere onderhoudsdosis kan worden volstaan.'
+  },
+  {
+    type:'single', domain:'Clopidogrel',
+    q:'Clopidogrel behoort tot welke groep geneesmiddelen?',
+    options:[
+      'P2Y12-receptorremmers (trombocytenaggregatieremmers)',
+      'Vitamine K-antagonisten',
+      'Directe trombineremmers',
+      'Cyclo-oxygenaseremmers'
+    ],
+    correct:0,
+    explain:'Clopidogrel behoort tot de trombocytenaggregatieremmers en is specifiek een remmer van de P2Y12-receptor, net als prasugrel en ticagrelor.'
+  },
+  {
+    type:'single', domain:'Clopidogrel',
+    q:'Hoe remt clopidogrel de aggregatie van bloedplaatjes?',
+    options:[
+      'Door de P2Y12-receptor te blokkeren, zodat ADP deze niet kan activeren',
+      'Door glycoproteïne IIb/IIIa rechtstreeks te blokkeren',
+      'Door trombine direct te remmen',
+      'Door cyclo-oxygenase in de bloedplaatjes te remmen'
+    ],
+    correct:0,
+    explain:'Normaal activeert ADP de P2Y12-receptor, wat via tussenstappen leidt tot activatie van glycoproteïne IIb/IIIa en aggregatie. Clopidogrel bindt aan de P2Y12-receptor zodat deze niet meer geactiveerd kan worden, wat leidt tot minder aggregatie.'
+  },
+  {
+    type:'single', domain:'Clopidogrel',
+    q:'Clopidogrel moet in de lever worden omgezet naar zijn actieve vorm. Welk enzym is hier vooral verantwoordelijk voor?',
+    options:['CYP2C19','CYP3A4','CYP2D6','CYP1A2'],
+    correct:0,
+    explain:'Clopidogrel is een prodrug die met name door het cytochroom P450-enzym CYP2C19 wordt omgezet naar zijn actieve metaboliet. Verminderde CYP2C19-activiteit (door remming of genetische variatie) verzwakt daardoor de werking van clopidogrel.'
+  },
+  {
+    type:'single', domain:'Clopidogrel',
+    q:'Welke protonpompremmer heeft de voorkeur bij een patiënt die clopidogrel gebruikt?',
+    options:['Pantoprazol','Omeprazol','Esomeprazol','Elke protonpompremmer is gelijkwaardig'],
+    correct:0,
+    explain:'Omeprazol en esomeprazol remmen CYP2C19 en kunnen zo de omzetting van clopidogrel naar zijn actieve vorm verminderen. Pantoprazol heeft daarom de voorkeur als een protonpompremmer nodig is naast clopidogrel.'
+  },
+  {
+    type:'single', domain:'Clopidogrel',
+    q:'Wat wordt aanbevolen bij een patiënt die een "intermediate metabolizer" van CYP2C19 is?',
+    options:[
+      'De onderhoudsdosering verdubbelen naar 150 mg per dag',
+      'Overstappen op een lagere dosis van 37,5 mg per dag',
+      'Clopidogrel direct volledig staken',
+      'De oplaaddosis verdubbelen naar 600 mg'
+    ],
+    correct:0,
+    explain:'Bij intermediate metabolizers is de CYP2C19-activiteit verminderd maar nog wel aantoonbaar aanwezig. Om voldoende actieve metaboliet te vormen wordt aanbevolen de onderhoudsdosering te verdubbelen naar 150 mg per dag. Bij poor metabolizers (vrijwel geen activiteit) wordt in plaats daarvan een alternatief middel aanbevolen.'
+  },
+  {
+    type:'case', domain:'Clopidogrel',
+    vignette:'Een patiënt heeft zojuist een TIA doorgemaakt.',
+    q:'Welke behandeling is hier eerste keus, en waarom?',
+    options:[
+      'Clopidogrel monotherapie: even effectief, goedkoper en minder bijwerkingen',
+      'Acetylsalicylzuur met ticagrelor, omdat dit sterker werkt',
+      'Alleen acetylsalicylzuur; clopidogrel is hier niet geïndiceerd',
+      'Prasugrel monotherapie vanwege het laagste bloedingsrisico'
+    ],
+    correct:0,
+    explain:'Bij een TIA of herseninfarct is clopidogrel eerste keus als monotherapie: het is even effectief, geeft minder bijwerkingen en is goedkoper dan de oude combinatie van acetylsalicylzuur en dipyridamol. Eén tablet per dag is bovendien gunstiger voor de therapietrouw.'
+  },
+  {
+    type:'single', domain:'Clopidogrel',
+    q:'Wat is de belangrijkste bijwerking van clopidogrel?',
+    options:['Verhoogde bloedingsneiging','Levertoxiciteit','Lactaatacidose','Schildklierfunctiestoornissen'],
+    correct:0,
+    explain:'De belangrijkste bijwerking van clopidogrel is een verhoogde bloedingsneiging — inherent aan het remmen van de bloedplaatjesaggregatie. Vergeleken met ticagrelor en prasugrel geeft clopidogrel overigens iets minder bloedingscomplicaties, maar wel iets minder bescherming tegen een nieuw infarct.'
+  },
+  {
+    type:'single', domain:'Metformine',
+    q:'Metformine is eerste keus medicamenteuze behandeling bij...',
+    options:[
+      'Diabetes mellitus type 2, na onvoldoende effect van leefstijladvies',
+      'Diabetes mellitus type 1, direct bij diagnose',
+      'Hypothyreoïdie in combinatie met levothyroxine',
+      'Acute hyperglykemische ontregeling op de spoedeisende hulp'
+    ],
+    correct:0,
+    explain:'Meer bewegen en afvallen vormen de eerste stap bij diabetes mellitus type 2. Pas als leefstijlaanpassingen alleen onvoldoende effect geven, wordt gestart met orale medicatie — en metformine is daarbij het eerste keus middel.'
+  },
+  {
+    type:'multi', domain:'Metformine',
+    q:'Welke van de volgende voordelen zijn aangetoond voor metformine? (meerdere antwoorden mogelijk)',
+    options:[
+      'Vermindert het risico op macrovasculair lijden, zoals een hartaanval',
+      'Heeft een gunstig effect op de mortaliteit (sterftecijfer)',
+      'Stimuleert extra insulineproductie door de pancreas',
+      'Geeft geen risico op gewichtstoename bij monotherapie'
+    ],
+    correct:[0,1,3],
+    explain:'Metformine was lange tijd het enige middel waarvan, naast verbeterde diabetesregulatie, ook een vermindering van macrovasculair lijden en een gunstig mortaliteitseffect was aangetoond. Omdat het de insulineproductie zelf niet stimuleert, geeft het bij monotherapie ook geen risico op gewichtstoename of hypo\'s.'
+  },
+  {
+    type:'open', domain:'Metformine',
+    q:'Beschrijf in grote lijnen hoe metformine, via de lever, de bloedglucose verlaagt.',
+    model:'Metformine remt het mitochondriële enzym mGPD (mitochondrieel glycerolfosfaat-dehydrogenase). Hierdoor vertraagt de glycerolfosfaat-shuttle, neemt de lactaat-pyruvaat-verhouding toe, en neemt de gluconeogenese (nieuwvorming van glucose) in de lever af. Per saldo scheiden de hepatocyten minder glucose af. Daarnaast verhoogt metformine de perifere insulinegevoeligheid, al is dat exacte mechanisme nog onbekend.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam de route via remming van mGPD, de veranderde lactaat-pyruvaat-verhouding en de verminderde gluconeogenese in de lever aan bod?'
+  },
+  {
+    type:'single', domain:'Metformine',
+    q:'Wat is de meest voorkomende bijwerking van metformine?',
+    options:['Maag-darmklachten, met name diarree','Lactaatacidose','Vitamine B12-deficiëntie','Hypoglykemie'],
+    correct:0,
+    explain:'Maag-darmklachten, vooral diarree, zijn de meest voorkomende bijwerking van metformine. Vitamine B12-deficiëntie kan ontstaan bij langdurig gebruik; lactaatacidose is zeldzaam maar gevaarlijk; hypoglykemie treedt bij metformine-monotherapie vrijwel niet op.'
+  },
+  {
+    type:'case', domain:'Metformine',
+    vignette:'Een patiënt met ernstige nierinsufficiëntie gebruikt metformine.',
+    q:'Welk risico is bij deze patiënt het meest relevant, en waarom?',
+    options:[
+      'Lactaatacidose, doordat metformine zich dan kan ophopen',
+      'Hypoglykemie, doordat metformine de insulineproductie stimuleert',
+      'Gewichtstoename, een bekend effect van metformine',
+      'Vitamine B12-deficiëntie, het grootste risico bij nierinsufficiëntie'
+    ],
+    correct:0,
+    explain:'Lactaatacidose is een zeldzame maar gevaarlijke bijwerking van metformine, met een verhoogd risico bij een onvoldoende gevulde circulatie of ernstige nierinsufficiëntie — omdat het middel zich dan onvoldoende kan laten uitscheiden en ophoopt.'
+  },
+  {
+    type:'single', domain:'Metformine',
+    q:'Waarom geeft metformine, in tegenstelling tot insuline of sulfonylureumderivaten, geen risico op hypoglykemie bij monotherapie?',
+    options:[
+      'Het stimuleert de insulineproductie zelf niet',
+      'Het werkt uitsluitend op de nieren, niet op de bloedglucose',
+      'Het heeft een zeer korte halfwaardetijd van enkele minuten',
+      'Het wordt nauwelijks geabsorbeerd vanuit de darm'
+    ],
+    correct:0,
+    explain:'Insuline en sulfonylureumderivaten verhogen de hoeveelheid (werkzame) insuline, wat tot hypoglykemie kan leiden. Metformine stimuleert de insulineproductie zelf niet, maar verlaagt de bloedglucose via remming van de gluconeogenese en verhoogde insulinegevoeligheid — daarom is er bij monotherapie geen hypoglykemierisico.'
+  },
+  {
+    type:'match', domain:'Overzicht',
+    q:'Koppel elk geneesmiddel aan zijn klasse of belangrijkste werking uit deze week.',
+    left:['Amiodaron','Clopidogrel','Metformine'],
+    right:[
+      'Klasse III anti-aritmicum, werkt op de refractaire periode',
+      'P2Y12-receptorremmer, remt bloedplaatjesaggregatie',
+      'Eerste keus orale bloedglucoseverlager bij DM2'
+    ],
+    correctMap:[0,1,2],
+    explain:'Deze week kwamen drie farmacologisch heel verschillende middelen langs: amiodaron als klasse III anti-aritmicum, clopidogrel als P2Y12-receptorremmer bij trombose-preventie, en metformine als eerste keus bloedglucoseverlager bij diabetes mellitus type 2.'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
