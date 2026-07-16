@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME RAAS-systeem en bloeddruk · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME RAAS-systeem en bloeddruk · Oefentoets</div>
+      <h1>Regulatie van het RAAS en de bloeddruk</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 24</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'order', domain:'RAAS-cascade',
+    q:'Zet de stappen van de RAAS-cascade in de juiste volgorde.',
+    items:['Renine wordt afgegeven door het JGA','Angiotensinogeen wordt gesplitst tot angiotensine I','ACE zet angiotensine I om in angiotensine II','Angiotensine II activeert de AT1-receptor'],
+    correctOrder:[0,1,2,3],
+    explain:'Renine wordt afgegeven door het juxtaglomerulaire apparaat en splitst angiotensinogeen tot angiotensine I. ACE zet angiotensine I vervolgens om in het actieve angiotensine II, dat via de AT1-receptor zijn klinisch relevante effecten uitoefent (vasoconstrictie, aldosteronsecretie, natriumreabsorptie).'
+  },
+  {
+    type:'single', domain:'RAAS-cascade',
+    q:'Waar wordt renine geproduceerd?',
+    options:['Het juxtaglomerulaire apparaat (JGA) rond de afferente arteriole','De zona glomerulosa van de bijnierschors','De macula densa in de distale tubulus','Het endotheel van de longvaten'],
+    correct:0,
+    explain:'Renine wordt geproduceerd door gespecialiseerde cellen van het juxtaglomerulaire apparaat (JGA), gelegen rond de afferente arteriole van de nefron. Pro-renine wordt daar gesynthetiseerd en gesplitst tot actief renine.'
+  },
+  {
+    type:'multi', domain:'RAAS-cascade',
+    q:'Welke effecten treden op via de AT1-receptor van angiotensine II? (meerdere antwoorden mogelijk)',
+    options:['Vasoconstrictie, met name van de efferente arteriole','Versterking van noradrenaline-afgifte uit zenuwuiteinden','Stimulatie van aldosteronsecretie door de bijnierschors','Remming van renine-afgifte via de macula densa'],
+    correct:[0,1,2],
+    explain:'Via de AT1-receptor veroorzaakt angiotensine II directe vasoconstrictie (vooral van de efferente arteriole), versterkt het de noradrenaline-afgifte, stimuleert het aldosteronsecretie en bevordert het natriumreabsorptie. Angiotensine II remt renine-afgifte inderdaad, maar dat verloopt via directe negatieve terugkoppeling op het JGA, niet via de macula densa.'
+  },
+  {
+    type:'single', domain:'RAAS-cascade',
+    q:'Wat is het netto-effect van de volledige RAAS-cascade?',
+    options:['Stijging van de bloeddruk én toename van het circulerend volume','Daling van de bloeddruk én afname van het volume','Alleen een effect op de bloeddruk, niet op het volume','Alleen een effect op het volume, niet op de bloeddruk'],
+    correct:0,
+    explain:'Het RAAS waarborgt de perfusie van vitale organen door zowel de bloeddruk (via vaatvernauwing) als het circulerend volume (via natrium- en waterretentie) te verhogen — precies de twee variabelen die het lichaam via dit systeem bewaakt.'
+  },
+  {
+    type:'match', domain:'Renine-regulatie',
+    q:'Koppel elk signaal aan het effect op de renine-afgifte door het JGA.',
+    left:['Drukdaling in de afferente arteriole','Verlaagde natriumaanvoer bij de macula densa','Angiotensine II zelf','Atriaal natriuretisch peptide (ANP)'],
+    right:[
+      'Stimuleert renine-afgifte (drukgevoelig mechanisme in de vaatwand)',
+      'Stimuleert renine-afgifte (macula densa detecteert lage NaCl-aanvoer)',
+      'Remt renine-afgifte via negatieve terugkoppeling op het JGA',
+      'Remt renine-afgifte, naast bevordering van natriurese'
+    ],
+    correctMap:[0,1,2,3],
+    explain:'Renine-afgifte wordt gestimuleerd door drukdaling in de afferente arteriole en door een lage natriumaanvoer bij de macula densa (beide signalen van ondervulling). Angiotensine II en ANP remmen renine-afgifte juist, als negatieve terugkoppeling op het systeem.'
+  },
+  {
+    type:'case', domain:'Kaliumsecretie',
+    vignette:'Kalium wordt door vrijwel de hele tubulus gereabsorbeerd; de regulatie van de kaliumbalans vindt pas in de verzamelbuis plaats, via secretie.',
+    q:'Welke twee voorwaarden zijn tegelijk nodig voor kaliumsecretie in de verzamelbuis?',
+    options:[
+      'Een open ENaC-kanaal (aldosteron) én voldoende distaal natriumaanbod',
+      'Alleen een hoog aldosteron; natriumaanbod is niet relevant',
+      'Alleen voldoende natriumaanbod; aldosteron is niet relevant',
+      'Een gesloten ENaC-kanaal met een laag natriumaanbod'
+    ],
+    correct:0,
+    explain:'Aldosteron stuurt het ENaC-kanaal aan, waarmee natrium wordt gereabsorbeerd en het lumen negatiever geladen wordt — de drijvende kracht voor kaliumsecretie. Zonder voldoende distaal natriumaanbod is er echter weinig natrium om tegen kalium uit te wisselen, ook al staat het kanaal open.'
+  },
+  {
+    type:'single', domain:'Kaliumsecretie',
+    q:'Waarom veroorzaakt pure volumedepletie meestal weinig kaliumverlies, ondanks een hoog aldosteron?',
+    options:[
+      'Vrijwel al het natrium is dan al proximaal gereabsorbeerd',
+      'Aldosteron werkt bij volumedepletie niet op het ENaC-kanaal',
+      'De macula densa is bij volumedepletie niet actief',
+      'Kaliumsecretie vindt dan uitsluitend proximaal plaats'
+    ],
+    correct:0,
+    explain:'Bij pure volumedepletie is vrijwel al het gefiltreerde natrium al proximaal gereabsorbeerd, zodat er distaal nauwelijks natrium overblijft om tegen kalium uit te wisselen. Er is dan dus een open ENaC-kanaal, maar onvoldoende natriumaanbod om veel kaliumsecretie te veroorzaken.'
+  },
+  {
+    type:'single', domain:'Kaliumsecretie',
+    q:'Waarom veroorzaken diuretica vaak hypokaliëmie?',
+    options:[
+      'Ze verhogen het distale natriumaanbod, terwijl het RAAS tegelijk geactiveerd is',
+      'Ze remmen het ENaC-kanaal in de verzamelbuis direct',
+      'Ze verlagen de aldosteronspiegel sterk',
+      'Ze verhogen de kaliumreabsorptie in de lis van Henle'
+    ],
+    correct:0,
+    explain:'Diuretica remmen natriumreabsorptie eerder in de tubulus, waardoor juist veel natrium distaal terechtkomt. Tegelijk raakt de patiënt volumedepleet en wordt het RAAS (dus aldosteron) geactiveerd — de combinatie van een open ENaC-kanaal mét fors natriumaanbod veroorzaakt dan flinke kaliumsecretie.'
+  },
+  {
+    type:'case', domain:'Volume vs. osmolaliteit',
+    vignette:'Een patiënt met nierinsufficiëntie kan onvoldoende natrium uitscheiden, waardoor het aantal natriumdeeltjes in het lichaam toeneemt.',
+    q:'Waardoor neemt bij deze patiënt het extracellulaire volume toe, terwijl de natriumcóncentratie ongeveer gelijk blijft?',
+    options:[
+      'Door de intacte osmolaliteitsregulatie: dorst en ADH zorgen voor extra water',
+      'Door een versterkte werking van aldosteron op het ENaC-kanaal',
+      'Doordat de macula densa extra renine afgeeft',
+      'Door een tekort aan ANP, waardoor natrium zich ophoopt'
+    ],
+    correct:0,
+    explain:'De opgehoopte natriumdeeltjes verhogen de osmolaliteit, wat de (intacte) osmolaliteitsregulatie activeert: dorst en ADH zorgen voor extra waterinname en -retentie. Dit verdunt het lichaam weer, waardoor de natriumconcentratie ongeveer gelijk blijft — maar het totale volume wél is toegenomen, met bijvoorbeeld oedeem als gevolg.'
+  },
+  {
+    type:'single', domain:'Volume vs. osmolaliteit',
+    q:'Wat is het onderscheid tussen volumeregulatie en osmolaliteitsregulatie?',
+    options:[
+      'Volumeregulatie verloopt via natrium (aldosteron), osmolaliteitsregulatie via water (ADH/dorst)',
+      'Volumeregulatie verloopt via water, osmolaliteitsregulatie via natrium',
+      'Beide systemen reguleren uitsluitend via aldosteron',
+      'Beide systemen reguleren uitsluitend via ADH'
+    ],
+    correct:0,
+    explain:'Volumeregulatie is in essentie natriumregulatie: via aldosteron wordt natrium (en daarmee water) vastgehouden. Osmolaliteitsregulatie verloopt juist via water: ADH-afgifte en dorst zorgen voor verdunning bij een te hoge osmolaliteit. Deze twee systemen kunnen onafhankelijk van elkaar verstoord zijn.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Een 63-jarige man met hypertensie en diabetes mellitus type 2 heeft een bloeddruk van 160/90 mmHg. Hij gebruikt amlodipine en hydrochloorthiazide. Je besluit een ACE-remmer (perindopril) te starten.',
+    q:'Welk geneesmiddel remt direct de omzetting van angiotensine I naar angiotensine II?',
+    options:['ACE-remmers','Angiotensine II-receptorblokkers (ARB\'s)','Renineremmers','Mineralocorticoïdreceptor-antagonisten (MRA\'s)'],
+    correct:0,
+    explain:'ACE-remmers blokkeren specifiek het angiotensine-converting enzyme (ACE), dat normaliter angiotensine I omzet in het actieve angiotensine II. ARB\'s grijpen pas ná deze omzetting aan, op de AT1-receptor zelf.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Diezelfde patiënt zou eventueel ook met een ARB behandeld kunnen worden in plaats van een ACE-remmer.',
+    q:'Wat is het belangrijkste mechanisme waardoor een ARB de bloeddruk verlaagt?',
+    options:['Blokkeren van de angiotensine II-receptor (AT1)','Remming van de angiotensinogeenaanmaak','Blokkeren van de omzetting van angiotensinogeen naar angiotensine I','Bevorderen van kaliumexcretie'],
+    correct:0,
+    explain:'ARB\'s blokkeren competitief de AT1-receptor, waardoor angiotensine II zijn effecten (vaatvernauwing, aldosteronsecretie) niet meer kan uitoefenen — ongeacht hoeveel angiotensine II er wordt aangemaakt.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Bij het starten van de ACE-remmer wil je de elektrolyten van deze patiënt goed vervolgen.',
+    q:'Welk elektrolyt is hierbij met name belangrijk om te vervolgen?',
+    options:['Kalium','Calcium','Fosfaat','Magnesium'],
+    correct:0,
+    explain:'ACE-remmers verminderen de aldosteronsecretie, wat de kaliumexcretie in de verzamelbuis vermindert. Hyperkaliëmie is daarom het belangrijkste elektrolytrisico om te vervolgen bij het starten (of ophogen) van RAAS-remmende medicatie.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Enkele maanden later is het erg warm, en blijkt de patiënt onvoldoende te drinken.',
+    q:'Wat voor invloed heeft dit op zijn RAAS-systeem?',
+    options:['Het RAAS wordt geactiveerd','Het RAAS wordt geïnactiveerd','Er is geen invloed op het RAAS','Alleen de kaliumspiegel wordt beïnvloed, niet het RAAS'],
+    correct:0,
+    explain:'Onvoldoende vochtinname en transpiratie bij warm weer verlagen het circulerend volume en de renale perfusiedruk. Dit wordt door het JGA opgevat als ondervulling en activeert het RAAS als beschermend mechanisme.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Je bespreekt met de patiënt hoe angiotensine II precies bijdraagt aan zijn hoge bloeddruk.',
+    q:'Wat is het primaire effect van angiotensine II binnen het RAAS-systeem?',
+    options:['Vasoconstrictie en verhoogde natriumretentie','Vasodilatatie en verhoogde natriumuitscheiding','Verhoogde aldosteronproductie en verminderde reninesecretie','Stimulatie van prostaglandinesynthese en bloeddrukdaling'],
+    correct:0,
+    explain:'Angiotensine II veroorzaakt directe vasoconstrictie (met name van de efferente arteriole) en stimuleert aldosteronsecretie, wat leidt tot natrium- en waterretentie. Beide effecten samen verhogen de bloeddruk en het circulerend volume.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Na het starten van perindopril gaat de nierfunctie van de patiënt licht achteruit (eGFR daalt ongeveer 8%).',
+    q:'Wat is hier het juiste beleid?',
+    options:['Continueren; dit is een verwacht hemodynamisch effect','Direct staken vanwege nierschade','De dosis meteen verdubbelen','Overstappen op een renineremmer'],
+    correct:0,
+    explain:'Een geringe (tot ~10%) daling van de eGFR bij het starten van een ACE-remmer is een verwacht, hemodynamisch effect door afname van de intraglomerulaire druk — en juist géén reden om te staken. Alleen bij een progressieve of grotere daling is nadere evaluatie nodig.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'De patiënt heeft na het starten van perindopril veel last van een kriebelhoest.',
+    q:'Door welk type geneesmiddel moet perindopril nu het beste vervangen worden?',
+    options:['Een ARB (AT1-receptorblokker)','Een andere ACE-remmer','Een mineralocorticoïdreceptor-antagonist','Een renineremmer'],
+    correct:0,
+    explain:'De hoest bij ACE-remmers ontstaat vermoedelijk door opstapeling van bradykinine. Een ARB grijpt pas aan ná de vorming van angiotensine II en beïnvloedt de bradykinineafbraak niet, waardoor deze hoest bij een ARB doorgaans uitblijft.'
+  },
+  {
+    type:'case', domain:'Casus',
+    vignette:'Vier maanden na het starten van de ACE-remmer is de nierfunctie van de patiënt fors achteruitgegaan. Hij is 2 weken geleden gevallen en gebruikt sindsdien ibuprofen tegen de pijn.',
+    q:'Wat is hier het werkingsmechanisme van het NSAID op het RAAS-systeem?',
+    options:[
+      'Vasoconstrictie van de afferente arteriole van de glomerulus',
+      'Vasodilatatie van de afferente arteriole van de glomerulus',
+      'Vasoconstrictie van de efferente arteriole van de glomerulus',
+      'Vasodilatatie van de efferente arteriole van de glomerulus'
+    ],
+    correct:0,
+    explain:'NSAID\'s remmen de prostaglandinesynthese die normaliter de afferente arteriole verwijdt houdt. Dit veroorzaakt vasoconstrictie van de afferente arteriole, terwijl de ACE-remmer tegelijk de compensatoire vernauwing van de efferente arteriole wegneemt — de glomerulaire filtratiedruk wordt zo dubbel onderuitgehaald.'
+  },
+  {
+    type:'single', domain:'Hartfalen',
+    q:'Waarom werkt RAAS-activatie bij hartfalen uiteindelijk averechts?',
+    options:[
+      'Het verhoogt zowel de preload als de afterload, wat het falende hart extra belast',
+      'Het verlaagt de bloeddruk te sterk, met shock als gevolg',
+      'Het remt de nierfunctie volledig en onomkeerbaar',
+      'Het verhoogt alleen de hartfrequentie, zonder effect op de vulling'
+    ],
+    correct:0,
+    explain:'Bij hartfalen interpreteert het lichaam de lage cardiac output ten onrechte als ondervulling. RAAS-activatie leidt dan tot zout/waterretentie (hogere preload) én vaatvernauwing (hogere afterload), wat het reeds falende hart extra belast — een vicieuze cirkel van verdere achteruitgang.'
+  },
+  {
+    type:'single', domain:'Hartfalen',
+    q:'Waarom verbeteren ACE-remmers, ARB\'s en aldosteronantagonisten bij hartfalen niet alleen de symptomen, maar ook de overleving?',
+    options:[
+      'Ze doorbreken de schadelijke neurohormonale RAAS-terugkoppeling',
+      'Ze verhogen direct de contractiekracht van het hart',
+      'Ze verwijden uitsluitend de coronairvaten',
+      'Ze verlagen de hartfrequentie via bètablokkade'
+    ],
+    correct:0,
+    explain:'De RAAS-activatie bij hartfalen is aanvankelijk compensatoir, maar wordt naarmate het hartfalen vordert steeds pathologischer. Door deze neurohormonale terugkoppeling te doorbreken, remmen ACE-remmers, ARB\'s en MRA\'s niet alleen symptomen, maar ook de verdere progressie van de ziekte.'
+  },
+  {
+    type:'single', domain:'Aldosteron-escape',
+    q:'Wat wordt bedoeld met "aldosteron-escape" bij gezonde personen?',
+    options:[
+      'Natriumretentie door aldosteron stopt na verloop van tijd vanzelf, zonder oedeem',
+      'Aldosteron blijft levenslang onbeperkt natrium vasthouden',
+      'Aldosteron wordt na verloop van tijd juist actiever',
+      'Het lichaam maakt na verloop van tijd extra aldosteron aan'
+    ],
+    correct:0,
+    explain:'Bij gezonde personen leidt een langdurig hoge aldosteronspiegel aanvankelijk tot natriumretentie, maar dit stopt na verloop van tijd vanzelf door een toegenomen distale natriumaanvoer — zodat er geen (of nauwelijks) oedeem ontstaat.'
+  },
+  {
+    type:'single', domain:'Aldosteron-escape',
+    q:'Waarom treedt aldosteron-escape bij hartfalen (en andere oedemateuze toestanden) juist niet op?',
+    options:[
+      'De distale natriumaanvoer blijft laag door verhoogde proximale reabsorptie',
+      'Aldosteron wordt bij hartfalen in het geheel niet meer aangemaakt',
+      'Het ENaC-kanaal is bij hartfalen permanent gesloten',
+      'De nieren scheiden bij hartfalen juist te veel natrium uit'
+    ],
+    correct:0,
+    explain:'Bij hartfalen blijft de distale natriumaanvoer laag doordat de proximale tubulus, mede door verhoogd angiotensine II en verminderde renale doorbloeding, meer natrium terugresorbeert. Hierdoor blijft aldosteron ononderbroken natrium vasthouden, wat oedeemvorming verklaart.'
+  },
+  {
+    type:'single', domain:'Renineremmers',
+    q:'Welk geneesmiddel is de enige klinisch beschikbare orale renineremmer?',
+    options:['Aliskiren','Ramipril','Losartan','Spironolactone'],
+    correct:0,
+    explain:'Aliskiren is de enige klinisch beschikbare orale renineremmer. Het blokkeert de omzetting van angiotensinogeen naar angiotensine I, dus nog vóórdat ACE aangrijpt.'
+  },
+  {
+    type:'multi', domain:'MRA\'s',
+    q:'Welke bijwerkingen horen bij mineralocorticoïdreceptor-antagonisten (MRA\'s)? (meerdere antwoorden mogelijk)',
+    options:['Hyperkaliëmie','Gynaecomastie, vooral bij spironolactone','Droge, kriebelende hoest','Hypoglykemie'],
+    correct:[0,1],
+    explain:'MRA\'s zoals spironolactone en eplerenone geven als belangrijkste bijwerking hyperkaliëmie, en bij spironolactone door minder selectieve receptorbinding ook oestrogene bijwerkingen zoals gynaecomastie. Kriebelhoest is specifiek voor ACE-remmers (bradykinine-gerelateerd), niet voor MRA\'s.'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
