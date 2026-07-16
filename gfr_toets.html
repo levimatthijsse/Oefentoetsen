@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Regulatie van de GFR · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Regulatie van de GFR · Oefentoets</div>
+      <h1>Regulatie van de glomerulaire filtratie</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 22</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const FIG_GLOM = `<svg class="hotspot-svg" viewBox="0 0 500 180">
+  <line x1="20" y1="90" x2="180" y2="90" stroke="var(--navy)" stroke-width="4"/>
+  <line x1="320" y1="90" x2="480" y2="90" stroke="var(--gold)" stroke-width="4"/>
+  <ellipse cx="250" cy="90" rx="75" ry="48" fill="none" stroke="var(--muted)" stroke-width="2"/>
+  <text class="hotspot-label" x="15" y="70" fill="var(--navy)" font-weight="700">Afferent ("voordeur")</text>
+  <text class="hotspot-label" x="325" y="70" fill="var(--gold)" font-weight="700">Efferent ("achterdeur")</text>
+  <text class="hotspot-label" x="215" y="55">Glomerulus</text>
+  <text class="hotspot-label" x="195" y="25" fill="var(--correct)">PGC (naar buiten)</text>
+  <text class="hotspot-label" x="195" y="160" fill="var(--incorrect)">π (naar binnen)</text>
+</svg>`;
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Starling-krachten',
+    q:'Welke twee krachten bepalen samen de netto filtratiedruk in de glomerulus?',
+    options:['Glomerulaire capillaire druk (PGC) en colloïd-osmotische druk (π)','Alleen de glomerulaire capillaire druk (PGC)','Alleen de colloïd-osmotische druk (π)','Renale bloeddoorstroming (RBF) en de GFR zelf'],
+    correct:0,
+    explain:'Glomerulaire filtratie berust op een netto drukverschil: PGC is naar buiten gericht en stimuleert filtratie, terwijl π (veroorzaakt door achterblijvende plasma-eiwitten) naar binnen gericht is en water terugtrekt de capillair in.'
+  },
+  {
+    type:'single', domain:'Starling-krachten',
+    q:'Waarom vindt er in de nier vrijwel continu filtratie plaats?',
+    options:['PGC is altijd groter dan de tegenwerkende colloïd-osmotische druk','π is in de nier altijd groter dan PGC','PGC en π zijn in de nier vrijwel precies aan elkaar gelijk','Filtratie in de nier hangt niet af van enig drukverschil'],
+    correct:0,
+    explain:'Omdat de hydrostatische druk (PGC) in de nier altijd groter is dan de tegenwerkende colloïd-osmotische druk (π), blijft de netto filtratiedruk positief en vindt er continu filtratie plaats.'
+  },
+  {
+    type:'single', domain:'Regulatie capillaire druk',
+    q:'Welke factor is de enige die de nier actief kan reguleren om de GFR te sturen?',
+    options:['De glomerulaire capillaire druk (PGC)','De colloïd-osmotische druk (π)','De renale bloeddoorstroming, los van PGC','De hoeveelheid eiwit die wordt gefiltreerd'],
+    correct:0,
+    explain:'Van alle Starling-krachten is de capillaire druk (PGC) de enige factor die de nier actief kan reguleren, door de vaatweerstand vóór (afferent) en ná (efferent) de glomerulus aan te passen.'
+  },
+  {
+    type:'single', domain:'Regulatie capillaire druk',
+    figure:FIG_GLOM,
+    q:'Bekijk de figuur hierboven. Wat gebeurt er bij afferente vasoconstrictie ("de voordeur dicht")?',
+    options:['PGC daalt, waardoor GFR en renale bloeddoorstroming direct afnemen','PGC stijgt, waardoor de GFR juist toeneemt','Alleen de bloeddoorstroming verandert, de GFR blijft gelijk','PGC blijft in dit geval exact gelijk'],
+    correct:0,
+    explain:'Bij afferente vasoconstrictie stroomt er minder bloed de glomerulus in. De druk (PGC) daalt hierdoor, waardoor zowel de GFR als de renale bloeddoorstroming (RBF) direct afnemen.'
+  },
+  {
+    type:'single', domain:'Regulatie capillaire druk',
+    q:'Wat gebeurt er bij efferente vasoconstrictie ("de achterdeur dicht")?',
+    options:['PGC stijgt, waardoor de GFR in eerste instantie toeneemt','PGC daalt, waardoor de GFR direct afneemt','De renale bloeddoorstroming neemt meteen sterk toe','De GFR blijft in dit geval volledig ongewijzigd'],
+    correct:0,
+    explain:'Bij efferente vasoconstrictie hoopt het bloed zich op in de glomerulus, waardoor de druk (PGC) stijgt en de GFR in eerste instantie toeneemt — ook al daalt de renale bloeddoorstroming zelf.'
+  },
+  {
+    type:'single', domain:'Regulatie capillaire druk',
+    q:'Wat gebeurt er wanneer efferente vasoconstrictie extreem wordt?',
+    options:['De bloedstroom wordt vrijwel nul, de oncotische druk stijgt snel en de GFR stopt alsnog','De GFR blijft in dat geval onbeperkt stijgen','PGC daalt dan plotseling en scherp','De afferente arteriole gaat daardoor automatisch verder open'],
+    correct:0,
+    explain:'Als de efferente vernauwing te extreem wordt, wordt de bloedstroom (RBF) nagenoeg nul. Hierdoor stijgt de oncotische druk in het resterende bloed zo snel dat het filtratie-evenwicht direct wordt bereikt en de GFR alsnog stopt.'
+  },
+  {
+    type:'single', domain:'Autoregulatie',
+    q:'Wat gebeurt er bij het myogene mechanisme wanneer de systemische bloeddruk stijgt?',
+    options:['De afferente arteriolewand rekt uit en trekt reflexmatig samen','De efferente arteriole verwijdt zich juist reflexmatig','De GFR stijgt daardoor ongeremd mee met de bloeddruk','De macula densa geeft daardoor direct extra adenosine af'],
+    correct:0,
+    explain:'Bij een stijgende bloeddruk rekt de wand van de afferente arteriole uit. Dit triggert een reflexmatige vasoconstrictie van dit vat, zodat de glomerulus beschermd blijft tegen een te hoge druk.'
+  },
+  {
+    type:'single', domain:'Autoregulatie',
+    q:'Wat registreert de macula densa bij tubuloglomerulaire feedback (TGF)?',
+    options:['De NaCl- (met name Cl⁻-) concentratie en flow in de distale tubulus','De glucoseconcentratie rechtstreeks in het bloed','De systemische bloeddruk rechtstreeks, zonder tussenstap','De hoeveelheid eiwit die in de urine verschijnt'],
+    correct:0,
+    explain:'De macula densa registreert de NaCl-concentratie (strikt genomen vooral Cl⁻, waarvoor de cellen gevoelig zijn) en flow in het distale tubulusvocht, en stuurt op basis daarvan de afgifte van adenosine.'
+  },
+  {
+    type:'case', domain:'Autoregulatie',
+    vignette:'Bij een stijgende GFR stroomt er meer vloeistof door de tubulus, waardoor minder NaCl wordt heropgenomen.',
+    q:'Wat gebeurt er vervolgens via de macula densa?',
+    options:[
+      'Meer adenosine-afgifte, wat de afferente arteriole laat samentrekken en de GFR laat dalen',
+      'Minder adenosine-afgifte, wat de GFR verder laat stijgen',
+      'De efferente arteriole trekt samen, wat de GFR verder verhoogt',
+      'Er treedt in dit geval geen enkele reactie op'
+    ],
+    correct:0,
+    explain:'De macula densa registreert de verhoogde NaCl-concentratie in de distale tubulus en geeft adenosine af. Adenosine laat de afferente arteriole samentrekken, waardoor de GFR weer daalt naar het normale niveau.'
+  },
+  {
+    type:'single', domain:'Autoregulatie',
+    q:'Wat gebeurt er bij TGF wanneer de GFR sterk daalt door hypotensie/hypoperfusie?',
+    options:[
+      'Minder adenosine-afgifte, vasodilatatie van de afferente arteriole en herstel van de GFR',
+      'Meer adenosine-afgifte, met een verdere daling van de GFR',
+      'De efferente arteriole trekt dan juist direct samen',
+      'Er is in deze situatie geen enkele TGF-reactie mogelijk'
+    ],
+    correct:0,
+    explain:'Bij een dalende GFR neemt de NaCl-concentratie in de distale tubulus af, wat leidt tot minder adenosine-afgifte door de macula densa. Dit veroorzaakt vasodilatatie van de afferente arteriole, waardoor de GFR zich weer herstelt.'
+  },
+  {
+    type:'single', domain:'Autoregulatie',
+    q:'Bij wie werkt het TGF-autoregulatiemechanisme merkbaar minder goed?',
+    options:['Bij ouderen en bij (chronische) nierschade','Uitsluitend bij jonge, verder gezonde personen','Alleen tijdens acute infecties, verder altijd normaal','Het werkt bij iedereen precies even goed'],
+    correct:0,
+    explain:'Naarmate mensen ouder worden, en ook bij een slechtere nierfunctie (vooral chronische nierschade), werkt dit autoregulatiemechanisme minder goed.'
+  },
+  {
+    type:'single', domain:'Autoregulatie',
+    q:'Wat kan er gebeuren bij langdurige hypertensie, als de bloeddruk daarna plotseling wordt "genormaliseerd"?',
+    options:['Onvoldoende autoregulatie, met een forse daling van de GFR','De GFR blijft in dat geval volledig stabiel','De autoregulatie wordt daardoor juist sterker','Er treedt in het geheel geen effect op de nierfunctie op'],
+    correct:0,
+    explain:'Bij jarenlange hypertensie kan de autoregulatie verschuiven naar een hoger druk-niveau. Een plotselinge "normalisatie" van de bloeddruk kan dan tot een ontoereikende autoregulatie en een forse daling van de GFR leiden.'
+  },
+  {
+    type:'case', domain:'SGLT2-remmers',
+    vignette:'Bij diabetes mellitus ontstaat vaak hyperfiltratie van de glomerulus, wat schadelijk is en tot verhoogde albuminurie leidt.',
+    q:'Hoe verminderen SGLT2-remmers deze hyperfiltratie?',
+    options:[
+      'Ze remmen natrium/glucose-opname, waardoor meer natrium de macula densa bereikt en de afferente arteriole samentrekt',
+      'Ze verwijden rechtstreeks de efferente arteriole van de glomerulus',
+      'Ze remmen de renine-afgifte volledig en definitief',
+      'Ze verhogen juist de glucosereabsorptie in de tubulus'
+    ],
+    correct:0,
+    explain:'SGLT2-remmers blokkeren de natrium- en glucoseopname vroeg in de tubulus, waardoor meer natrium de macula densa bereikt. Dit activeert TGF: de afferente arteriole trekt samen ("de voordeur iets dichter"), wat de schadelijke hyperfiltratie vermindert — vermoedelijk de basis van hun nefroprotectieve effect.'
+  },
+  {
+    type:'single', domain:'Hormonale regulatie',
+    q:'Hoe houdt angiotensine II bij een volumetekort de GFR op peil?',
+    options:['Door selectieve vasoconstrictie van de efferente arteriole','Door vasodilatatie van zowel de afferente als efferente arteriole','Door de macula densa functioneel volledig uit te schakelen','Door de colloïd-osmotische druk actief te verlagen'],
+    correct:0,
+    explain:'Angiotensine II knijpt bij een volumetekort selectief de efferente arteriole dicht. Hierdoor blijft PGC hoog genoeg om de GFR op peil te houden, ondanks de verminderde renale doorbloeding.'
+  },
+  {
+    type:'single', domain:'Hormonale regulatie',
+    q:'Wat is het effect van atriaal natriuretisch peptide (ANP) op de GFR?',
+    options:['Verhoogt de GFR door vasodilatatie van zowel de afferente als efferente arteriole','Verlaagt de GFR door afferente vasoconstrictie','Heeft in het geheel geen effect op de arteriolen','Verhoogt uitsluitend de weerstand van de efferente arteriole'],
+    correct:0,
+    explain:'ANP verhoogt de GFR door vasodilatatie van zowel de afferente als de efferente arteriole. Daarnaast remt ANP ook de secretie van renine.'
+  },
+  {
+    type:'single', domain:'Hormonale regulatie',
+    q:'Wat is het meest voorkomende effect van adrenaline/noradrenaline op de nier bij duidelijke sympathicusactivatie (bijv. sepsis)?',
+    options:['Afferente vasoconstrictie, met verminderde renale doorbloeding','Efferente vasoconstrictie, met een verhoogde GFR','Vasodilatatie van zowel afferente als efferente arteriole','Geen enkel effect op de renale doorbloeding'],
+    correct:0,
+    explain:'Adrenaline en noradrenaline kunnen zowel afferent als efferent vasoconstrictie geven, maar bij evidente sympathicusactivatie (zoals bij sepsis) overheerst afferente vasoconstrictie — een van de verklaringen waarom de nier zo gevoelig is voor ischemie bij forse hypotensie/hypoperfusie.'
+  },
+  {
+    type:'single', domain:'Hormonale regulatie',
+    q:'Waar heeft ADH binnen de nier zijn sterkste vaateffect?',
+    options:['Vasoconstrictie in het diepe merg, ter bescherming van de concentratiegradiënt','Uitsluitend op de afferente arteriole van de glomerulus','Uitsluitend op de efferente arteriole van de glomerulus','Het heeft in het geheel geen vaateffect binnen de nier'],
+    correct:0,
+    explain:'ADH heeft enig effect op de glomerulaire vaten, maar het sterkste effect is vasoconstrictie in het diepe merg van de nier. Dit voorkomt het uitspoelen van de concentratiegradiënt, waardoor de nier geconcentreerde urine kan blijven maken.'
+  },
+  {
+    type:'match', domain:'Hormonale regulatie',
+    q:'Koppel elke stof aan het bijbehorende effect op de arteriolen van de glomerulus.',
+    left:['Angiotensine II','ANP','Prostaglandines','Adrenaline/noradrenaline (bij sepsis)'],
+    right:[
+      'Vasoconstrictie van de efferente arteriole',
+      'Vasodilatatie van zowel afferente als efferente arteriole',
+      'Vasodilatatie van de afferente arteriole',
+      'Vasoconstrictie van de afferente arteriole'
+    ],
+    correctMap:[0,1,2,3],
+    explain:'Angiotensine II knijpt selectief de efferente arteriole dicht om de GFR te behouden. ANP verwijdt juist beide arteriolen. Prostaglandines houden lokaal de afferente arteriole verwijd. Catecholamines veroorzaken bij duidelijke sympathicusactivatie vooral afferente vasoconstrictie.'
+  },
+  {
+    type:'single', domain:'Triple Whammy',
+    q:'Wat is het mechanisme van NSAID\'s op de afferente arteriole van de glomerulus?',
+    options:[
+      'Ze remmen prostaglandinen die de afferente arteriole normaliter verwijd houden, met vasoconstrictie als gevolg',
+      'Ze verwijden de afferente arteriole juist extra sterk',
+      'Ze hebben in het geheel geen effect op de afferente arteriole',
+      'Ze remmen uitsluitend de efferente arteriole, niet de afferente'
+    ],
+    correct:0,
+    explain:'Prostaglandines (met name PGE2 en PGI2) houden normaliter de afferente arteriole verwijd. NSAID\'s remmen deze prostaglandinesynthese, met vasoconstrictie van de afferente arteriole als gevolg — precies wanneer die verwijding het hardst nodig is.'
+  },
+  {
+    type:'case', domain:'Triple Whammy',
+    vignette:'Een gedehydreerde patiënt gebruikt zowel een NSAID als een ACE-remmer.',
+    q:'Waarom is deze combinatie ("triple whammy") zo gevaarlijk voor de nierfunctie?',
+    options:[
+      'Het NSAID sluit de afferente "voordeur", de ACE-remmer opent de efferente "achterdeur", en PGC stort in',
+      'Beide middelen verhogen de PGC in dit geval juist te sterk',
+      'NSAID en ACE-remmer heffen elkaars werking hier volledig op, zonder netto-effect',
+      'Alleen de ACE-remmer is in deze combinatie relevant, het NSAID niet'
+    ],
+    correct:0,
+    explain:'Bij dehydratie (lage perfusiedruk) sluit het NSAID de afferente "voordeur" (door prostaglandineremming), terwijl de ACE-remmer de efferente "achterdeur" openzet (door remming van angiotensine II). Hierdoor stort de filtratiedruk (PGC) volledig in, met acute nierinsufficiëntie als gevolg.'
+  },
+  {
+    type:'multi', domain:'Overzicht',
+    q:'Welke van de volgende houden de afferente arteriole juist verwijd (de "voordeur" open)? (meerdere antwoorden mogelijk)',
+    options:['Prostaglandines','Atriaal natriuretisch peptide (ANP)','Angiotensine II','Adenosine via tubuloglomerulaire feedback'],
+    correct:[0,1],
+    explain:'Prostaglandines houden de afferente arteriole lokaal verwijd, en ANP verwijdt zowel de afferente als efferente arteriole. Angiotensine II grijpt juist selectief aan op de efferente arteriole (vernauwing), en adenosine via TGF veroorzaakt afferente vasoconstrictie, geen verwijding.'
+  },
+  {
+    type:'open', domain:'Triple Whammy',
+    q:'Leg uit waarom de combinatie van dehydratie, NSAID\'s en ACE-remmers ("triple whammy") tot acute nierinsufficiëntie kan leiden.',
+    model:'Bij dehydratie is de renale perfusiedruk al verlaagd. Normaal compenseert het lichaam dit deels door angiotensine II (efferente vasoconstrictie, PGC op peil houden) en door prostaglandines (afferente vasodilatatie, voldoende instroom). Een NSAID remt de prostaglandinesynthese, waardoor de afferente arteriole juist vernauwt ("voordeur dicht"). Een ACE-remmer remt de vorming van angiotensine II, waardoor de efferente vernauwing wegvalt ("achterdeur open"). Beide compensatiemechanismen worden zo tegelijk uitgeschakeld, waardoor PGC volledig instort en de GFR acuut kan stoppen.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwamen zowel het wegvallen van de afferente compensatie (NSAID/prostaglandines) als de efferente compensatie (ACE-remmer/angiotensine II) aan bod, en het gevolg voor PGC?'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
