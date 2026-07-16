@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME E-health thuismonitoren · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME E-health thuismonitoren · Oefentoets</div>
+      <h1>E-health — thuismonitoren</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 20</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'multi', domain:'Achtergrond & aanleiding',
+    q:'Waarom was er tijdens de COVID-pandemie een noodzaak om zorg op afstand te verlenen? (meerdere antwoorden mogelijk)',
+    options:['Naar het ziekenhuis komen werd ontmoedigd','Patiënten durfden niet naar het ziekenhuis te komen','Artsen hadden minder capaciteit door andere COVID-werkzaamheden','Ziekenhuizen hadden juist een overschot aan personeel'],
+    correct:[0,1,2],
+    explain:'Tijdens de pandemie werd een ziekenhuisbezoek ontmoedigd vanwege het thuis-blijf-advies en reisbeperkingen, durfden patiënten vaak zelf niet te komen, en hadden artsen minder capaciteit doordat zij andere COVID-gerelateerde werkzaamheden hadden. Dit alles gaf een sterke impuls aan zorg op afstand.'
+  },
+  {
+    type:'single', domain:'Achtergrond & aanleiding',
+    q:'Hoeveel is het aantal niertransplantatiepatiënten de afgelopen tijd ongeveer gegroeid?',
+    options:['Van ongeveer 6.000 naar 12.000','Van ongeveer 12.000 naar 6.000','Van ongeveer 1.000 naar 2.000','Het aantal is ongeveer gelijk gebleven'],
+    correct:0,
+    explain:'Het aantal niertransplantatiepatiënten is de afgelopen tijd enorm toegenomen, van ongeveer 6.000 naar 12.000. Deze groei wordt verwacht door te zetten, wat efficiëntere zorg (zoals zorg op afstand) des te noodzakelijker maakt.'
+  },
+  {
+    type:'single', domain:'Voordelen voor de patiënt',
+    q:'Wat is een belangrijk voordeel van zorg op afstand voor de patiënt, naast minder reistijd en -kosten?',
+    options:['Meer regie over de eigen gezondheid en zorg','Altijd een langere consultduur dan normaal','Volledige vervanging van lichamelijk onderzoek','Geen enkele apparatuur meer nodig'],
+    correct:0,
+    explain:'Door de patiënt thuis zelf metingen te laten doen, wordt de regie over de zorg en gezondheid weer teruggegeven aan de patiënt zelf, in plaats van dat dit volledig bij de arts ligt.'
+  },
+  {
+    type:'single', domain:'Voordelen voor de patiënt',
+    q:'Hoe draagt zorg op afstand bij aan een verschuiving in de organisatie van zorg?',
+    options:['Van zorg gecentreerd rond de dokter, naar zorg gecentreerd rond de patiënt','Van zorg gecentreerd rond de patiënt, naar zorg gecentreerd rond de dokter','Er verandert in de organisatie van zorg feitelijk niets','Zorg wordt hierdoor volledig gecentreerd rond de verzekeraar'],
+    correct:0,
+    explain:'Digitalisering en zorg op afstand dragen bij aan een verschuiving van zorg gecentreerd op de dokter en het ziekenhuis, naar zorg gecentreerd op de patiënt zelf.'
+  },
+  {
+    type:'multi', domain:'Voordelen voor de arts',
+    q:'Welke voordelen heeft zorg op afstand voor de arts? (meerdere antwoorden mogelijk)',
+    options:['Effectievere consultvoorbereiding door vooraf beschikbare thuismetingen','Betere onderbouwing van de keuze wel/niet naar de SEH','Voorkomen van onnodige consulten bij chronische controle','Volledige vervanging van lichamelijk onderzoek'],
+    correct:[0,1,2],
+    explain:'Vooraf beschikbare thuismetingen maken de consultvoorbereiding effectiever, kunnen meewegen in acute triage-beslissingen (SEH/polikliniek/thuis), en maken het mogelijk onnodige consulten bij chronische controle te voorkomen. Lichamelijk onderzoek blijft echter onmogelijk op afstand.'
+  },
+  {
+    type:'case', domain:'Voordelen voor de arts',
+    vignette:'Een patiënt belt met koorts, misselijkheid en braken, en heeft de mogelijkheid om thuis metingen te doen en deze te communiceren met de arts.',
+    q:'Welk voordeel biedt dit voor de acute beoordeling door de arts?',
+    options:[
+      'De thuismetingen kunnen meewegen in de beslissing SEH, polikliniek of thuis behandelen',
+      'De arts hoeft dan in het geheel niet meer telefonisch bereikbaar te zijn',
+      'De patiënt hoeft in dat geval nooit meer gezien te worden',
+      'Dit heeft in de praktijk geen invloed op de te maken beslissing'
+    ],
+    correct:0,
+    explain:'Door de thuismetingen mee te nemen in de beoordeling, kan de arts beter onderbouwd beslissen of de patiënt naar de SEH of polikliniek moet komen, of thuis behandeld kan worden — wat in acute situaties de werkdruk voor het ziekenhuis kan verminderen.'
+  },
+  {
+    type:'case', domain:'Voordelen voor de arts',
+    vignette:'Een patiënt staat chronisch onder controle en stuurt regelmatig thuismetingen door die steeds goed zijn.',
+    q:'Wat is hierbij een genoemd voordeel van zorg op afstand voor de arts?',
+    options:[
+      'Er hoeft dan geen fysiek consult plaats te vinden, wat onnodige consulten voorkomt',
+      'Er moet dan juist vaker een fysiek consult plaatsvinden',
+      'De arts moet de metingen altijd persoonlijk ter plekke komen controleren',
+      'Dit heeft in de praktijk geen effect op de consultfrequentie'
+    ],
+    correct:0,
+    explain:'Bij chronische controle kan worden afgesproken dat er geen contact is zolang de waarden goed zijn, en dat een fysiek consult alleen plaatsvindt als dat nodig is. Zo worden onnodige consulten voorkomen, wat bij een groeiende patiëntenpopulatie en personeelstekort belangrijk is.'
+  },
+  {
+    type:'multi', domain:'Nadelen',
+    q:'Wat zijn mogelijke nadelen van zorg op afstand? (meerdere antwoorden mogelijk)',
+    options:['Onmogelijkheid om patiënten lichamelijk te onderzoeken','Missen van subtielere tekenen van ziek zijn','Afhankelijkheid van betrouwbare ICT-verbindingen','Een sterke toename van het aantal fysieke consulten'],
+    correct:[0,1,2],
+    explain:'Genoemde nadelen zijn: het niet kunnen doen van lichamelijk onderzoek, het missen van subtielere ziektetekenen (zoals minder snel lopen of benauwdheid bij inspanning), en de afhankelijkheid van (en kosten van) betrouwbare ICT. Zorg op afstand leidt juist tot minder, niet meer, fysieke consulten.'
+  },
+  {
+    type:'single', domain:'Randvoorwaarden',
+    q:'Welke twee hoofdzaken zijn minimaal nodig om thuismeten mogelijk te maken?',
+    options:['Apparatuur voor de patiënt én een app/platform om metingen in te voeren','Alleen een app; apparatuur is daarbij niet nodig','Alleen apparatuur; een app is daarbij niet nodig','Uitsluitend een subsidie van de overheid'],
+    correct:0,
+    explain:'Ten eerste is er apparatuur nodig waarmee de patiënt kan meten, en ten tweede een app of platform waarop de patiënt deze metingen thuis kan invoeren en delen met de zorgverlener.'
+  },
+  {
+    type:'single', domain:'Randvoorwaarden',
+    q:'Welke apparatuur zit in de SeCReT-box voor niertransplantatiepatiënten?',
+    options:['Bloeddrukmeter, zuurstofmeter, thermometer en weegschaal','Alleen een bloeddrukmeter, verder niets','Een ECG-apparaat en een glucosemeter','Een smartwatch en een stappenteller'],
+    correct:0,
+    explain:'De SeCReT-box bevat een bloeddrukmeter en weegschaal voor de reguliere wekelijkse of maandelijkse metingen, plus een thermometer en zuurstofmeter voor aanvullende metingen bij ziekte (zoals infectie of benauwdheid).'
+  },
+  {
+    type:'single', domain:'Randvoorwaarden',
+    q:'Wat is de rol van een platform zoals Luscii precies?',
+    options:[
+      'Het is slechts het platform; het programma zelf (wat, hoe vaak, grenzen, alarmen) stel je zelf samen',
+      'Het platform bepaalt volledig zelf alle meetgrenzen en alarmen',
+      'Het platform vervangt volledig de rol van de zorgverlener',
+      'Het platform is uitsluitend bedoeld voor coronapatiënten'
+    ],
+    correct:0,
+    explain:'Luscii is slechts het platform. Wat je precies wilt meten, hoe vaak, welke grenzen en welke alarmen gelden, stel je als zorgverlener zelf samen — tenzij er al een kant-en-klaar programma bestaat dat kan worden aangeschaft.'
+  },
+  {
+    type:'multi', domain:'Succesfactoren en valkuilen',
+    q:'Welke van de volgende zijn genoemde succesfactoren bij het implementeren van zorg op afstand? (meerdere antwoorden mogelijk)',
+    options:['Klein beginnen met een kernteam ("coalition of the willing")','Verpleegkundigen vroeg betrekken bij de ontwikkeling','Vooraf een strenge patiëntselectie maken','Overleg met een jurist over wet- en regelgeving'],
+    correct:[0,1,3],
+    explain:'Genoemde succesfactoren zijn onder meer klein beginnen met een kernteam, verpleegkundigen vroeg betrekken, en juridisch overleg over de geldende wet- en regelgeving. Vooraf strikt selecteren is juist afgeraden: het uitgangspunt is "ja, tenzij bewezen niet lukt".'
+  },
+  {
+    type:'single', domain:'Succesfactoren en valkuilen',
+    q:'Welk adaptatieprincipe wordt aangeraden bij het includeren van patiënten voor zorg op afstand?',
+    options:['"Ja, tenzij bewezen niet lukt", zonder vooraf selectie te maken','Alleen jonge, digitaal vaardige patiënten includeren','Alleen patiënten die er zelf expliciet om vragen','Patiënten pas includeren na een uitgebreide screening'],
+    correct:0,
+    explain:'Bij adaptatie onder patiënten wordt aangeraden geen selectie vooraf te maken, maar het principe "ja, tenzij bewezen niet lukt" te hanteren — dus in beginsel iedereen de kans geven.'
+  },
+  {
+    type:'single', domain:'Succesfactoren en valkuilen',
+    q:'Hoe werd het benodigde startkapitaal in het beschreven voorbeeld gefinancierd?',
+    options:[
+      'Via twee subsidies van €50.000, later aangevuld met een vergoeding per patiënt van zorgverzekeraars',
+      'Volledig uit eigen zak van de betrokken artsen',
+      'Uitsluitend via een banklening',
+      'Er was in dit voorbeeld geen enkel startkapitaal nodig'
+    ],
+    correct:0,
+    explain:'Het startkapitaal bestond uit een subsidie van €50.000, gevolgd door een tweede subsidie van €50.000. Sinds begin 2023 geven zorgverzekeraars daarnaast een vergoeding per patiënt.'
+  },
+  {
+    type:'open', domain:'Succesfactoren en valkuilen',
+    q:'Waarom is het juridisch kader een belangrijk aandachtspunt bij het opzetten van zorg op afstand?',
+    model:'Ook bij zorg op afstand blijft de arts aansprakelijk en tuchtrechtelijk vervolgbaar. Er is specifieke wet- en regelgeving, bijvoorbeeld rondom de verantwoordelijkheid voor de zorg van de patiënt en het onderhoud van de apparatuur. Overleg met een jurist is daarom nodig, zodat patiëntveiligheid en de plichten van de arts centraal blijven staan.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam naar voren dat aansprakelijkheid en tuchtrecht ook bij zorg op afstand gewoon gelden, en dat specifieke wet- en regelgeving (zorgverantwoordelijkheid, apparatuuronderhoud) hierbij een rol speelt?'
+  },
+  {
+    type:'order', domain:'Toekomstige ontwikkeling',
+    q:'Zet de stappen van de verdere ontwikkeling van zorg op afstand in de juiste volgorde.',
+    items:['Thuismeting via SeCReT-box/app voor huidige patiënten','Regionale of thuis bloedafname (dried-blood-spot of point-of-care)','Telemonitoring door een verpleegkundig specialist die alarmen afhandelt','Data monitoring centrum met periodieke doorstuur van waarden'],
+    correctOrder:[0,1,2,3],
+    explain:'De ontwikkeling verloopt stapsgewijs: eerst thuismeting via de SeCReT-box/app, dan bloedafname dichterbij huis, vervolgens telemonitoring door een verpleegkundig specialist, en uiteindelijk een data monitoring centrum met periodieke doorstuur van waarden en een jaarlijkse standaardcontrole.'
+  },
+  {
+    type:'match', domain:'Toekomstige ontwikkeling',
+    q:'Koppel elke ontwikkelstap aan de bijbehorende beschrijving.',
+    left:['Stap 1','Stap 2','Stap 3','Stap 4'],
+    right:[
+      'Thuismeting via SeCReT-box/app: betrouwbare metingen, patiënt in de lead',
+      'Regionale of thuis bloedafname via dried-blood-spot of point-of-care',
+      'Telemonitoring door een verpleegkundig specialist die alarmen afhandelt',
+      'Data monitoring centrum: periodieke doorstuur van waarden, jaarlijkse standaardcontrole'
+    ],
+    correctMap:[0,1,2,3],
+    explain:'Elke stap bouwt voort op de vorige: van thuismeting, via bloedafname dichter bij huis en telemonitoring, tot een volwaardig data monitoring centrum waarbij de medisch specialist nog maar één keer per jaar een standaardcontrole doet.'
+  },
+  {
+    type:'single', domain:'Toekomstige ontwikkeling',
+    q:'Wat is een voorbeeld van "point-of-care" bloedafname op afstand?',
+    options:['Een directe thuisbepaling, zoals glucose','Een druppel bloed op filtreerpapier opsturen per post','Een bloedafname bij de huisarts','Een jaarlijks bezoek aan het ziekenhuis voor bloedprikken'],
+    correct:0,
+    explain:'Point-of-care meting betekent een directe bepaling ter plekke, zoals een glucosemeting thuis. Dit is iets anders dan de dried-blood-spot methode, waarbij een druppel bloed op filtreerpapier wordt opgestuurd voor latere analyse.'
+  },
+  {
+    type:'single', domain:'Toekomstige ontwikkeling',
+    q:'Wat gebeurt er in stap 4 (data monitoring centrum) als een verpleegkundig specialist geen bijzonderheden ziet in de doorgestuurde waarden?',
+    options:['De volgende "inleverdatum" is over 4 maanden','Er volgt altijd direct een afspraak bij de medisch specialist','De patiënt moet dan wekelijks nieuwe waarden opsturen','De zorg wordt in dat geval volledig stopgezet'],
+    correct:0,
+    explain:'Als er geen bijzonderheden zijn, is de volgende "inleverdatum" pas over 4 maanden. Zijn er wél bijzonderheden, dan wordt dit geprotocolleerd afgehandeld en volgt alleen zo nodig een afspraak bij de medisch specialist.'
+  },
+  {
+    type:'single', domain:'Toekomstige ontwikkeling',
+    q:'Wat is het beoogde eindresultaat van deze stapsgewijze ontwikkeling van zorg op afstand?',
+    options:['Dezelfde medisch-inhoudelijke zorg, maar wel efficiënter georganiseerd','Volledige vervanging van alle medisch specialisten','Een verdubbeling van het aantal fysieke consulten','Uitsluitend kostenbesparing, los van de zorgkwaliteit'],
+    correct:0,
+    explain:'Het beoogde resultaat is dat patiënten dezelfde medisch-inhoudelijke zorg krijgen als voorheen, maar dan georganiseerd op een efficiëntere manier — met bijvoorbeeld nog maar één jaarlijkse standaardcontrole bij de medisch specialist.'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
