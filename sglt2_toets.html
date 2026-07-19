@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LMV Geneesmiddel van de week · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LMV Geneesmiddel van de week · Oefentoets</div>
+      <h1>SGLT2-remmers</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 18</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Historie',
+    q:'Uit welke plant werd florizine, de voorloper van SGLT2-remmers, oorspronkelijk geïsoleerd?',
+    options:['De stam van bepaalde appelbomen','De wortel van de vingerhoedskruid','Schimmels uit de Penicillium-familie','De bladeren van de digitalis-plant'],
+    correct:0,
+    explain:'Florizine werd aan het begin van de 20e eeuw geïsoleerd uit de stam van bepaalde appelbomen. Het remde zowel SGLT1 als SGLT2, en bleek glucosurie en verbeterde insulinegevoeligheid te veroorzaken.'
+  },
+  {
+    type:'single', domain:'Historie',
+    q:'Waarom werd florizine zelf nooit een geneesmiddel?',
+    options:[
+      'Het remde niet-selectief zowel SGLT1 als SGLT2, met maagdarmklachten en slechte absorptie tot gevolg',
+      'Het bleek in het geheel geen effect te hebben op de bloedglucose',
+      'Het veroorzaakte bij elk gebruik ernstige hypoglykemie',
+      'Het kon destijds niet chemisch worden nagemaakt'
+    ],
+    correct:0,
+    explain:'Florizine remde niet-selectief zowel SGLT1 als SGLT2, wat maagdarmklachten gaf (SGLT1 speelt ook een rol in de darm) en zorgde voor een slechte absorptie in het maag-darmkanaal. Pas latere biotechnologische vooruitgang maakte selectieve SGLT2-remming mogelijk.'
+  },
+  {
+    type:'single', domain:'Werkingsmechanisme',
+    q:'Waar bevindt de SGLT2-pomp zich?',
+    options:['Uitsluitend aan de luminale zijde van de proximale tubulus in de nier','Verspreid door het hele maag-darmkanaal','In de bètacellen van de pancreas','Aan de basolaterale zijde van de verzamelbuis'],
+    correct:0,
+    explain:'SGLT2 (sodium-glucose co-transporter type 2) bevindt zich specifiek aan de luminale zijde van de proximale tubulus in de nier, waar het verantwoordelijk is voor het grootste deel van de glucosereabsorptie.'
+  },
+  {
+    type:'single', domain:'Werkingsmechanisme',
+    q:'Welk percentage van de glucosereabsorptie verloopt via SGLT2, en welk deel via SGLT1?',
+    options:['Ongeveer 90% via SGLT2, 10% via SGLT1','Ongeveer 50% via elk van beide transporters','Ongeveer 10% via SGLT2, 90% via SGLT1','Uitsluitend via SGLT2; SGLT1 speelt hierbij geen rol'],
+    correct:0,
+    explain:'SGLT2 is verantwoordelijk voor ongeveer 90% van de glucosereabsorptie in de proximale tubulus; de overige 10% verloopt via SGLT1, dat een vergelijkbare werking heeft maar ook elders in het lichaam voorkomt.'
+  },
+  {
+    type:'single', domain:'Werkingsmechanisme',
+    q:'Wat is de nierdrempel voor glucose?',
+    options:['Rond 10 mmol/l, waarboven SGLT2 verzadigd raakt en glucose spontaan wordt uitgeplast','Rond 4 mmol/l, de ondergrens van een normale bloedglucose','Er bestaat in de fysiologie geen nierdrempel voor glucose','Rond 20 mmol/l, en alleen bij extreem ernstige hyperglykemie'],
+    correct:0,
+    explain:'Onder normale omstandigheden wordt dagelijks ongeveer 180 gram glucose gefilterd en weer gereabsorbeerd. Bij een plasmaglucoseconcentratie boven ongeveer 10 mmol/l raakt SGLT2 verzadigd, en treedt spontaan glucosurie op — dit is de nierdrempel voor glucose.'
+  },
+  {
+    type:'single', domain:'Werkingsmechanisme',
+    q:'Hoe verschilt het effect van SGLT2-remmers van de fysiologische nierdrempel?',
+    options:[
+      'Ze remmen de glucosereabsorptie onafhankelijk van de bloedglucoseconcentratie, ook onder de 10 mmol/l',
+      'Ze verhogen juist de nierdrempel naar een hogere waarde dan normaal',
+      'Ze werken uitsluitend als de bloedglucose al boven de 10 mmol/l ligt',
+      'Ze hebben in het geheel geen effect op de nierdrempel'
+    ],
+    correct:0,
+    explain:'SGLT2-remmers blokkeren de pomp direct, waardoor de glucosereabsorptie wordt geremd onafhankelijk van de bloedglucoseconcentratie of insuline — ook als de bloedspiegel ver onder de normale nierdrempel van 10 mmol/l ligt.'
+  },
+  {
+    type:'case', domain:'Farmacologie & fysiologie',
+    vignette:'SGLT2 transporteert glucose gekoppeld aan natrium, aangedreven door de basolaterale Na⁺/K⁺-ATPase.',
+    q:'Wat is het gevolg van SGLT2-remming voor de natriumhuishouding?',
+    options:[
+      'Minder natrium wordt gereabsorbeerd, met natriurese en bloeddrukverlaging als gevolg',
+      'Natrium wordt door SGLT2-remming juist versterkt gereabsorbeerd',
+      'Er is geen enkel effect op natrium, alleen op glucose',
+      'Natrium wordt volledig actief uitgescheiden, los van SGLT2'
+    ],
+    correct:0,
+    explain:'Omdat glucose en natrium via SGLT2 samen worden getransporteerd, remt blokkade van de pomp ook de natriumreabsorptie. Dit stimuleert natriurese, wat leidt tot een milde bloeddrukverlaging en een afname van de cardiale pre- en afterload.'
+  },
+  {
+    type:'single', domain:'Indicaties',
+    q:'Bij welke DM2-patiënten hebben SGLT2-remmers metformine als eerste keus middel verdrongen?',
+    options:['Patiënten met een zeer hoog cardiovasculair risico, zoals na een eerder cardiovasculair event','Alle DM2-patiënten, ongeacht hun risicoprofiel','Uitsluitend patiënten jonger dan 40 jaar','Alleen patiënten met een contra-indicatie voor elk ander middel'],
+    correct:0,
+    explain:'Bij DM2-patiënten met een zeer hoog cardiovasculair risico (bijvoorbeeld na een eerder doorgemaakt cardiovasculair event) hebben SGLT2-remmers metformine als eerste keus middel verdrongen, vanwege hun bewezen gunstige cardiovasculaire effecten.'
+  },
+  {
+    type:'single', domain:'Indicaties',
+    q:'Voor welke indicatie zijn zowel dapagliflozine als empagliflozine geregistreerd, naast diabetes?',
+    options:['Chronisch hartfalen','Uitsluitend chronische nierschade','Uitsluitend hypertensie zonder hartfalen','Acute coronaire syndromen'],
+    correct:0,
+    explain:'Zowel dapagliflozine als empagliflozine zijn geregistreerd voor de behandeling van chronisch hartfalen, onafhankelijk van de aanwezigheid van diabetes, vanwege hun gunstige effect op de cardiale belasting.'
+  },
+  {
+    type:'single', domain:'Indicaties',
+    q:'Welke SGLT2-remmer is specifiek geregistreerd voor chronische nierschade (nierfalen)?',
+    options:['Dapagliflozine','Canagliflozine','Uitsluitend empagliflozine','Geen van de SGLT2-remmers heeft deze indicatie'],
+    correct:0,
+    explain:'Dapagliflozine is geregistreerd om de progressie van nefropathie te vertragen bij chronische nierschade, naast de indicaties diabetes en hartfalen.'
+  },
+  {
+    type:'multi', domain:'Bijwerkingen',
+    q:'Welke van de volgende zijn bekende bijwerkingen van SGLT2-remmers? (meerdere antwoorden mogelijk)',
+    options:['Urogenitale infecties','Fournier-gangreen','Euglykemische ketoacidose','Frequente, ernstige hypoglykemie'],
+    correct:[0,1,2],
+    explain:'Urogenitale infecties zijn de meest voorkomende bijwerking, Fournier-gangreen is een zeer zeldzame maar ernstige complicatie, en euglykemische ketoacidose is een zeldzame maar berucht moeilijk te herkennen bijwerking. Hypoglykemie is bij monotherapie juist relatief zeldzaam, omdat het mechanisme niet op de insulinesecretie aangrijpt.'
+  },
+  {
+    type:'single', domain:'Bijwerkingen',
+    q:'Waarom komen urogenitale infecties vaker voor bij gebruik van SGLT2-remmers?',
+    options:['Glucosurie ("zoete urine") geeft bacteriën en schimmels een betere voedingsbodem','SGLT2-remmers onderdrukken rechtstreeks het immuunsysteem','Ze verlagen de nierdrempel voor bacteriën','Dit fenomeen staat volledig los van het werkingsmechanisme'],
+    correct:0,
+    explain:'Door de glucosurie ("zoete urine") ontstaat een gunstigere voedingsbodem voor bacteriën en schimmels. Urineweg- en genitale infecties (zoals candida-balanitis of -vaginitis) komen hierdoor 3 tot 5 keer vaker voor dan bij placebo.'
+  },
+  {
+    type:'single', domain:'Bijwerkingen',
+    q:'Wat maakt euglykemische ketoacidose bij SGLT2-remmers klinisch lastig te herkennen?',
+    options:['De bloedglucosewaarden kunnen nagenoeg normaal zijn, ondanks de ketoacidose','De bloedglucose is bij deze complicatie juist altijd extreem verhoogd','Deze complicatie treedt uitsluitend op bij overdosering','Patiënten hebben bij deze complicatie nooit enige klacht'],
+    correct:0,
+    explain:'Bij euglykemische ketoacidose ontwikkelt de patiënt een ernstige ketoacidose terwijl de bloedglucosewaarden nagenoeg normaal (euglykemisch) lijken — waardoor de diagnose in de kliniek makkelijk gemist kan worden.'
+  },
+  {
+    type:'single', domain:'Bijwerkingen',
+    q:'Wat is opvallend aan het hypoglykemierisico van SGLT2-remmers bij monotherapie?',
+    options:['Het is relatief zeldzaam, omdat het mechanisme niet op de insulinesecretie aangrijpt','Het is juist zeer frequent, vergelijkbaar met insulinegebruik','Hypoglykemie treedt bij vrijwel elke patiënt op','Het risico is nooit systematisch onderzocht'],
+    correct:0,
+    explain:'Omdat SGLT2-remmers niet ingrijpen op de insulinesecretie, maar puur op de renale glucoseresorptie, is het risico op hypoglykemie bij monotherapie relatief zeldzaam — in tegenstelling tot bijvoorbeeld insuline of sulfonylureumderivaten.'
+  },
+  {
+    type:'single', domain:'Bijwerkingen',
+    q:'Wat is Fournier-gangreen?',
+    options:['Een snel progressieve fasciitis necroticans van het scrotum, perineum of de vulva','Een chronische, verder onschuldige huidirritatie','Een goedaardige zwelling van de nier','Een vorm van diabetische retinopathie'],
+    correct:0,
+    explain:'Fournier-gangreen is een extreem zeldzame, maar zeer ernstige en potentieel levensbedreigende, snel progressieve fasciitis necroticans (weefseletende ontsteking) van het scrotum, perineum of de vulva.'
+  },
+  {
+    type:'single', domain:'Klinische voordelen',
+    q:'Hoeveel gewichtsverlies wordt gemiddeld gezien bij gebruik van SGLT2-remmers?',
+    options:['Ongeveer 2 kilo','Ongeveer 10 kilo','Geen enkel meetbaar gewichtsverlies','Gemiddeld juist 2 kilo gewichtstoename'],
+    correct:0,
+    explain:'Doordat patiënten dagelijks glucose (en dus calorieën) uitplassen, vallen zij gemiddeld ongeveer 2 kilo af bij gebruik van een SGLT2-remmer.'
+  },
+  {
+    type:'single', domain:'Klinische voordelen',
+    q:'Waaraan wordt het cardio- en nefroprotectieve effect van SGLT2-remmers vooral toegeschreven, naast de glucoseverlaging?',
+    options:['De gecombineerde natriurese en bloeddrukdaling','Een direct effect op de contractiliteit van de hartspier','Remming van de insulinesecretie door de pancreas','Een toename van het lichaamsgewicht'],
+    correct:0,
+    explain:'De cardiovasculaire en renale beschermende effecten zijn groter dan je puur op basis van de lagere bloedglucoseconcentratie zou verwachten, en worden vooral verklaard door de gecombineerde natriurese en bloeddrukdaling.'
+  },
+  {
+    type:'open', domain:'Klinische voordelen',
+    q:'Leg uit waarom het cardiovasculaire en renale beschermende effect van SGLT2-remmers groter lijkt dan je puur op basis van de bloedglucoseverlaging zou verwachten.',
+    model:'Doordat SGLT2-remming ook de natriumreabsorptie remt (natrium en glucose worden immers samen getransporteerd), treedt er natriurese op. Dit geeft een milde bloeddrukverlaging en een afname van de cardiale pre- en afterload. Deze effecten dragen, bovenop de lagere bloedglucoseconcentratie alleen, bij aan de waargenomen cardio- en nefroprotectieve effecten.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam de link tussen SGLT2-remming, natriurese, bloeddrukdaling en verminderde cardiale pre-/afterload duidelijk naar voren als verklaring naast de glucoseverlaging zelf?'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
