@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Inleiding nierfysiologie · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Inleiding nierfysiologie · Oefentoets</div>
+      <h1>Inleiding in de nierfysiologie</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 27</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'order', domain:'Filtratiebarrière',
+    q:'Zet de vier lagen van de glomerulaire filtratiebarrière in de volgorde die een gefilterde stof tegenkomt (van bloed naar urine).',
+    items:['Glycocalyx','Gefenestreerd endotheel','Glomerulaire basaalmembraan (GBM)','Podocyten met filtratie-slit'],
+    correctOrder:[0,1,2,3],
+    explain:'Een gefilterde stof passeert eerst de glycocalyx, dan het gefenestreerde endotheel (met grote "ramen"), vervolgens de glomerulaire basaalmembraan (collageen + heparaansulfaat), en tot slot de filtratie-slit tussen de podocytvoetjes.'
+  },
+  {
+    type:'single', domain:'Filtratiebarrière',
+    q:'Wat veroorzaakt vooral de ladingsselectiviteit van de filtratiebarrière?',
+    options:['Negatieve lading van glycocalyx, endotheel en de GBM','De grootte van de opening tussen de podocytvoetjes','Het collageen in de basaalmembraan op zichzelf','Actief transport van eiwitten terug het bloed in'],
+    correct:0,
+    explain:'De negatief geladen componenten (glycocalyx, endotheel, en de heparaansulfaat in de GBM) stoten negatief geladen moleculen zoals albumine af, ongeacht hun grootte — vergelijkbaar met twee gelijke polen van een magneet.'
+  },
+  {
+    type:'single', domain:'Filtratiebarrière',
+    q:'Wat veroorzaakt vooral de grootteselectiviteit van de filtratiebarrière?',
+    options:['De filtratie-slit tussen de podocytvoetjes','De negatieve lading van de glycocalyx','Het gefenestreerde endotheel op zichzelf','De Na⁺/K⁺-ATPase in de tubuluscellen'],
+    correct:0,
+    explain:'De filtratie-slit tussen de podocytvoetjes (overbrugd door nefrine en podocine) vormt de fijnste zeef: grote moleculen passen hier simpelweg niet doorheen, ongeacht hun lading.'
+  },
+  {
+    type:'case', domain:'Filtratiebarrière',
+    vignette:'Bij een patiënt worden zowel kleine als grote eiwitten in de urine aangetroffen.',
+    q:'Welk type selectiviteitsverlies past hier het beste bij?',
+    options:['Verlies van grootteselectiviteit','Verlies van ladingsselectiviteit','Een combinatie van beide is per definitie onmogelijk','Dit past bij geen enkele vorm van selectiviteitsverlies'],
+    correct:0,
+    explain:'Bij verlies van grootteselectiviteit (bijvoorbeeld door verwijding van de filtratie-slit) passeren zowel kleine als grote eiwitten. Bij verlies van alleen ladingsselectiviteit blijven grote eiwitten juist wél tegengehouden.'
+  },
+  {
+    type:'single', domain:'Filtratiebarrière',
+    q:'Wat wijst een lage selectiviteitsindex (weinig IgG, relatief veel albumine in de urine) op?',
+    options:['Verlies van ladingsselectiviteit','Verlies van grootteselectiviteit','Een volledig normale filtratiebarrière','Een sterk verhoogde GFR'],
+    correct:0,
+    explain:'De selectiviteitsindex vergelijkt een groot eiwit (IgG) met een klein, negatief geladen eiwit (albumine) in de urine. Een lage index (weinig IgG, veel albumine) past bij verlies van ladingsselectiviteit; een hoge index past bij verlies van grootteselectiviteit.'
+  },
+  {
+    type:'single', domain:'Filtratiebarrière',
+    q:'Hoe worden de zeer kleine eiwitten die toch door beide filtratiebarrières passeren, teruggewonnen?',
+    options:['Grotendeels in de proximale tubulus, via receptor-gemedieerde endocytose en afbraak','In de lis van Henle, via passieve diffusie langs de osmotische gradiënt','In de verzamelbuis, onder invloed van aldosteron','Ze worden onder alle omstandigheden volledig uitgeplast'],
+    correct:0,
+    explain:'Kleine eiwitten die de filtratiebarrière wél passeren, worden grotendeels teruggewonnen in de proximale tubulus: via glycoproteïnen die als een soort vliegenband aan de eiwitten kleven, of via afbraak tot aminozuren in de borstelzoom.'
+  },
+  {
+    type:'match', domain:'Fysische transportprocessen',
+    q:'Koppel elk fysisch transportprincipe aan de bijbehorende toepassing bij dialyse.',
+    left:['Diffusie','Osmose','Filtratie (met convectie)'],
+    right:[
+      'Peritoneale dialyse, via het buikvlies',
+      'Peritoneale dialyse: glucose onttrekt water door een hogere osmotische waarde',
+      'Hemodialyse: een stijve kunstnier oefent een echte druk uit'
+    ],
+    correctMap:[0,1,2],
+    explain:'Diffusie (deeltjes van hoog naar laag) ligt aan de basis van peritoneale dialyse. Osmose (waterverplaatsing) wordt bij peritoneale dialyse benut door glucose aan het dialysaat toe te voegen. Filtratie met convectie (een echt drukverschil) is het principe achter hemodialyse.'
+  },
+  {
+    type:'single', domain:'Fysische transportprocessen',
+    q:'Wat is het onderliggende principe van osmose?',
+    options:[
+      'Water verplaatst zich om een concentratie-evenwicht te benaderen, als deeltjes zelf niet door het membraan kunnen',
+      'Deeltjes bewegen altijd van lage naar hoge concentratie',
+      'Een drukverschil perst water door het membraan',
+      'Water beweegt bij osmose altijd tegen de concentratiegradiënt in'
+    ],
+    correct:0,
+    explain:'Bij osmose kunnen de opgeloste deeltjes zelf niet door het membraan; in plaats daarvan verplaatst het water zich om een concentratie-evenwicht te benaderen. Dit is het principe achter waterreabsorptie in de verzamelbuis.'
+  },
+  {
+    type:'single', domain:'Creatinine & GFR',
+    q:'Waarom wordt creatinine gebruikt als maat voor de GFR?',
+    options:[
+      'Het wordt met vrijwel constante snelheid door spieren geproduceerd en vrijwel uitsluitend door de nier uitgescheiden',
+      'Het wordt volledig door de lever geproduceerd en ook weer afgebroken',
+      'De plasmaconcentratie is bij elke persoon exact identiek',
+      'Creatinine wordt nooit door de glomerulus gefiltreerd'
+    ],
+    correct:0,
+    explain:'Creatinine wordt continu en met een vrijwel constante snelheid geproduceerd door spierweefsel, en wordt vrijwel uitsluitend renaal uitgescheiden. Dit maakt de formule GFR ≈ (U × V) / P bruikbaar als maat voor de nierfunctie.'
+  },
+  {
+    type:'case', domain:'Creatinine & GFR',
+    vignette:'Een patiënt met een slechte nierfunctie bevindt zich toch in steady state (de plasmacreatinineconcentratie is van dag tot dag gelijk).',
+    q:'Wat geldt er dan voor de creatinine-excretie, vergeleken met iemand met een goede nierfunctie die ook in steady state is?',
+    options:[
+      'De excretie is gelijk aan de productie, en dus ongeveer gelijk bij beide patiënten',
+      'De excretie is bij een slechte nierfunctie structureel lager dan de productie',
+      'De excretie is bij een slechte nierfunctie structureel hoger dan de productie',
+      'Steady state is bij een slechte nierfunctie per definitie onmogelijk'
+    ],
+    correct:0,
+    explain:'In steady state is de excretie per definitie gelijk aan de (constante) productie, ongeacht of de nierfunctie goed of slecht is. Bij een slechtere nierfunctie duurt het alleen langer voordat een nieuwe steady state (met een hogere plasmaspiegel) wordt bereikt.'
+  },
+  {
+    type:'single', domain:'Proximale tubulus',
+    q:'Hoe wordt glucose normaliter in de proximale tubulus gereabsorbeerd?',
+    options:[
+      'Via natrium-glucose-cotransporters (SGLT2/SGLT1), meeliftend op de Na⁺-gradiënt',
+      'Via passieve diffusie, volledig onafhankelijk van natrium',
+      'Via het ENaC-kanaal, aangestuurd door aldosteron',
+      'Glucose wordt in de proximale tubulus juist actief uitgescheiden'
+    ],
+    correct:0,
+    explain:'Glucose "lift mee" op de instroom van Na⁺ via natrium-glucose-cotransporters (SGLT2, en verderop SGLT1) op de apicale membraan, en verlaat de cel basolateraal via gefaciliteerde diffusie (GLUT-transporters).'
+  },
+  {
+    type:'single', domain:'Proximale tubulus',
+    q:'Wanneer verschijnt er glucose in de urine?',
+    options:[
+      'Pas bij overschrijding van de transportcapaciteit, zoals bij hyperglykemie of door SGLT2-remmers',
+      'Bij elke, ook lage, bloedglucosewaarde',
+      'Alleen bij een tekort aan insuline, nooit door medicatie',
+      'Glucose komt onder geen enkele omstandigheid in de urine terecht'
+    ],
+    correct:0,
+    explain:'Normaliter wordt alle gefilterde glucose gereabsorbeerd. Pas wanneer de transportcapaciteit van SGLT2/SGLT1 wordt overschreden — zoals bij hyperglykemie, of farmacologisch door SGLT2-remmers — verschijnt glucose in de urine.'
+  },
+  {
+    type:'single', domain:'Proximale tubulus',
+    q:'Waarom verloopt waterreabsorptie in de proximale tubulus isosmotisch?',
+    options:[
+      'Water volgt passief mee met alle gereabsorbeerde opgeloste stoffen ("water volgt zout")',
+      'Water wordt hier actief tegen de osmotische gradiënt in gepompt',
+      'Er wordt in dit segment in het geheel geen water gereabsorbeerd',
+      'ADH stuurt hier al actief de waterreabsorptie aan'
+    ],
+    correct:0,
+    explain:'Water volgt hier passief en osmotisch mee met alle gereabsorbeerde opgeloste stoffen, waardoor de tubulusvloeistof ongeveer 300 mOsm/kg blijft — zowel vóór als ná dit segment (isosmotisch). Ongeveer 65-70% van het gefiltreerde water wordt hier al gereabsorbeerd.'
+  },
+  {
+    type:'single', domain:'Lis van Henle',
+    q:'Wat is de belangrijkste eigenschap van het dunne dalende deel van de lis van Henle?',
+    options:[
+      'Goed doorlaatbaar voor water, nauwelijks voor zouten',
+      'Ondoorlaatbaar voor water, met actief zouttransport',
+      'Hier vindt de fijnregulatie van Na⁺/Cl⁻ plaats',
+      'Hier ligt de macula densa'
+    ],
+    correct:0,
+    explain:'Het dunne dalende deel is via AQP1-kanalen goed doorlaatbaar voor water, maar nauwelijks voor zouten. Doordat de tubulus steeds dieper het hyperosmotische merg indaalt, wordt water passief onttrokken en raakt de tubulusvloeistof geconcentreerder.'
+  },
+  {
+    type:'single', domain:'Lis van Henle',
+    q:'Welke transporter zorgt voor de belangrijkste actieve stap in het dikke stijgende deel van de lis van Henle?',
+    options:['De Na⁺/K⁺/2Cl⁻-cotransporter (NKCC2)','De Na⁺/Cl⁻-cotransporter (NCC)','Het ENaC-kanaal','SGLT2'],
+    correct:0,
+    explain:'NKCC2 op de apicale membraan van het dikke stijgende deel verzorgt de actieve reabsorptie van Na⁺, K⁺ en Cl⁻, aangedreven door dezelfde basolaterale Na⁺/K⁺-ATPase die in vrijwel elk tubulussegment de motor achter reabsorptie vormt.'
+  },
+  {
+    type:'single', domain:'Lis van Henle',
+    q:'Waarom is het dikke stijgende deel cruciaal voor het concentrerend vermogen van de nier?',
+    options:[
+      'Het bouwt, ondoorlaatbaar voor water, de hyperosmotische gradiënt in het merg op die de verzamelbuis later gebruikt',
+      'Het reabsorbeert hier het grootste deel van het gefiltreerde water',
+      'Het is het enige segment waar aldosteron rechtstreeks aangrijpt',
+      'Het is uitsluitend verantwoordelijk voor kaliumsecretie'
+    ],
+    correct:0,
+    explain:'Doordat dit segment ondoorlaatbaar is voor water, verdunt het actieve zouttransport hier de tubulusvloeistof én bouwt het tegelijk de hyperosmotische gradiënt in het niermerg op — nodig voor de latere waterreabsorptie in de verzamelbuis (tegenstroomvermenigvuldiging).'
+  },
+  {
+    type:'single', domain:'Distale tubulus',
+    q:'Welke transporter is het aangrijpingspunt van thiazidediuretica?',
+    options:['De Na⁺/Cl⁻-cotransporter (NCC) in de distale tubulus','NKCC2 in de lis van Henle','Het ENaC-kanaal in de verzamelbuis','SGLT2 in de proximale tubulus'],
+    correct:0,
+    explain:'Thiazidediuretica grijpen aan op de NCC (Na⁺/Cl⁻-cotransporter) in de distale tubulus, die verantwoordelijk is voor de fijnregulatie van de resterende natrium/chloridereabsorptie.'
+  },
+  {
+    type:'single', domain:'Distale tubulus',
+    q:'Welk hormoon reguleert de calciumreabsorptie in de distale tubulus?',
+    options:['Parathyroïdhormoon (PTH)','Aldosteron','ADH','Insuline'],
+    correct:0,
+    explain:'Calciumreabsorptie in de distale tubulus staat onder invloed van parathyroïdhormoon (PTH) — te onderscheiden van natrium/kaliumregulatie (aldosteron) en waterregulatie (ADH) elders in het nefron.'
+  },
+  {
+    type:'case', domain:'Verzamelbuis',
+    vignette:'Een patiënt gebruikt een lisdiureticum, waardoor veel natrium distaal in de verzamelbuis terechtkomt, terwijl het RAAS ook geactiveerd is (hoog aldosteron).',
+    q:'Wat is hiervan het te verwachten gevolg voor de kaliumbalans?',
+    options:[
+      'Fors kaliumverlies, door de combinatie van een open ENaC-kanaal en veel distaal natriumaanbod',
+      'Kaliumretentie, want aldosteron remt juist de kaliumsecretie',
+      'Geen effect op kalium; dit speelt uitsluitend in de lis van Henle',
+      'Kaliumverlies treedt alleen op bij een gelijktijdige hypoglykemie'
+    ],
+    correct:0,
+    explain:'Voor forse kaliumsecretie zijn twee dingen tegelijk nodig: een open ENaC-kanaal (aangestuurd door aldosteron) én voldoende distale natriumaanvoer. Een lisdiureticum levert dat natriumaanbod, terwijl het RAAS via aldosteron het ENaC-kanaal openhoudt — een klassieke oorzaak van hypokaliëmie.'
+  },
+  {
+    type:'single', domain:'Verzamelbuis',
+    q:'Hoe verhoogt ADH de waterpermeabiliteit van de verzamelbuis?',
+    options:[
+      'Via V2-receptoren die de inbouw van aquaporine-2 (AQP2) in de apicale membraan stimuleren',
+      'Door het ENaC-kanaal rechtstreeks te openen',
+      'Door de Na⁺/K⁺-ATPase te remmen',
+      'Door de osmotische gradiënt in het merg actief af te breken'
+    ],
+    correct:0,
+    explain:'ADH bindt aan V2-receptoren op de hoofdcellen van de verzamelbuis en stimuleert zo de inbouw van AQP2-kanalen in de apicale membraan. Zonder ADH is dit segment vrijwel ondoorlaatbaar voor water; mét ADH kan water passief langs de merggradiënt naar het bloed stromen.'
+  },
+  {
+    type:'open', domain:'Basisprincipe tubulair transport',
+    q:'Leg uit hoe de Na⁺/K⁺-ATPase aan de basis staat van reabsorptie van veel andere stoffen in de tubulus.',
+    model:'De Na⁺/K⁺-ATPase pompt op de basolaterale membraan continu 3 Na⁺ naar buiten in ruil voor 2 K⁺ naar binnen, wat ATP kost. Dit houdt de intracellulaire Na⁺-concentratie laag, waardoor een sterke elektrochemische gradiënt ontstaat die Na⁺ vanuit het lumen de cel in trekt. Deze gradiënt wordt vervolgens hergebruikt via secundair actief transport, om andere stoffen (zoals glucose, aminozuren, en indirect ook bicarbonaat) tegen hun eigen concentratiegradiënt in mee te transporteren.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam de rol van de basolaterale Na⁺/K⁺-ATPase in het laag houden van de intracellulaire Na⁺-concentratie, en het hergebruik van die gradiënt voor secundair actief transport, duidelijk naar voren?'
+  },
+  {
+    type:'single', domain:'Zuur-base regulatie',
+    q:'Wat bepaalt volgens de Henderson-Hasselbalch-vergelijking de bloed-pH?',
+    options:[
+      'De verhouding tussen bicarbonaat en CO₂, niet de absolute waarden',
+      'Uitsluitend de absolute CO₂-concentratie in het bloed',
+      'Uitsluitend de absolute bicarbonaatconcentratie in het bloed',
+      'De totale hoeveelheid zuur die per dag door het lichaam wordt geproduceerd'
+    ],
+    correct:0,
+    explain:'De bloed-pH wordt bepaald door de verhouding tussen HCO₃⁻ en CO₂, niet door hun absolute waarden. Dit verklaart de taakverdeling: longen reguleren snel de CO₂-kant, nieren reguleren trager maar met grotere capaciteit de HCO₃⁻-kant.'
+  },
+  {
+    type:'single', domain:'Zuur-base regulatie',
+    q:'Via welk mechanisme reabsorbeert de proximale tubulus het grootste deel van het gefiltreerde bicarbonaat?',
+    options:[
+      'Indirect, via H⁺-secretie die met gefiltreerd HCO₃⁻ reageert tot CO₂, dat de cel in diffundeert',
+      'Direct, doordat bicarbonaat vrij door de tubuluscelmembraan diffundeert',
+      'Via aldosteron-gestuurde kanalen in de verzamelbuis',
+      'Bicarbonaat wordt in de proximale tubulus juist nooit gereabsorbeerd'
+    ],
+    correct:0,
+    explain:'Omdat tubuluscellen nauwelijks doorlaatbaar zijn voor bicarbonaat zelf, verloopt reabsorptie indirect: via de Na⁺/H⁺-exchanger wordt H⁺ het lumen in gepompt, vormt met gefiltreerd HCO₃⁻ carbonzuur, dat via carboanhydrase wordt omgezet in CO₂, dat vrij de cel in diffundeert.'
+  },
+  {
+    type:'single', domain:'Zuur-base regulatie',
+    q:'Wat is de functie van ammoniogenese (afbraak van glutamine tot NH₄⁺) in de nier?',
+    options:[
+      'Nieuw bicarbonaat aanmaken en H⁺ uitscheiden als NH₄⁺, vooral bij langdurige zuurbelasting',
+      'Uitsluitend bicarbonaat uitscheiden, en alleen bij alkalose',
+      'Uitsluitend natrium reabsorberen in de proximale tubulus',
+      'Glucose produceren als energiebron voor de nier zelf'
+    ],
+    correct:0,
+    explain:'Bij ammoniogenese wordt glutamine afgebroken tot glutamaat (dat twee nieuwe bicarbonaationen oplevert) en ammonium (NH₄⁺, dat wordt uitgescheiden). Dit is de belangrijkste manier waarop de nier zich kan aanpassen aan een langduriger zuurbelasting.'
+  },
+  {
+    type:'single', domain:'Zuur-base regulatie',
+    q:'Hoe scheidt de nier bicarbonaat actief uit bij alkalose?',
+    options:['Via bèta-intercalated cells in de verzamelbuis','Via alfa-intercalated cells in de proximale tubulus','Via het ENaC-kanaal, aangestuurd door aldosteron','Via SGLT2 in de proximale tubulus'],
+    correct:0,
+    explain:'Bij alkalose kan de nier bicarbonaat actief uitscheiden via bèta-intercalated cells in de verzamelbuis — het spiegelbeeld van de H⁺-secretie/bicarbonaatreabsorptie die normaal via alfa-intercalated cells plaatsvindt.'
+  },
+  {
+    type:'match', domain:'Longen vs. nieren',
+    q:'Koppel elke zuur-base stoornis aan de bijbehorende compensatoire respons.',
+    left:['Metabole acidose','Metabole alkalose','Respiratoire acidose','Respiratoire alkalose'],
+    right:[
+      'Hyperventilatie (Kussmaul-ademhaling) als snelle respons',
+      'Hypoventilatie als snelle respons',
+      'Nier reabsorbeert/produceert traag meer HCO₃⁻',
+      'Nier scheidt traag meer HCO₃⁻ uit'
+    ],
+    correctMap:[0,1,2,3],
+    explain:'Bij metabole verstoringen reageren de longen als eerste, snelle compensatie (hyper- of hypoventilatie). Bij respiratoire verstoringen is het juist de nier die, trager maar met grote capaciteit, de bicarbonaatreabsorptie/-productie of -excretie aanpast.'
+  },
+  {
+    type:'single', domain:'Longen vs. nieren',
+    q:'Wat is het belangrijkste verschil in tempo tussen longen en nieren bij zuur-base compensatie?',
+    options:[
+      'Longen compenseren binnen minuten, nieren pas over uren tot dagen',
+      'Longen en nieren compenseren altijd precies even snel',
+      'Nieren compenseren sneller dan de longen',
+      'Longen compenseren pas na dagen, nieren juist binnen minuten'
+    ],
+    correct:0,
+    explain:'Longen reguleren de CO₂-kant van de bicarbonaatbuffer snel (minuten) maar met beperkte capaciteit. Nieren reguleren de HCO₃⁻-kant trager (uren tot dagen), maar met een veel grotere capaciteit.'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
