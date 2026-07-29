@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Argumenteren kun je leren 1 · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Argumenteren kun je leren 1 · Oefentoets</div>
+      <h1>De Jewson-these & denkkaders in de geneeskunde</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 31</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Jewson-these algemeen',
+    q:'Wat was volgens Jewson de algemene trend in de ontwikkeling van medische kennis over de laatste twee eeuwen?',
+    options:[
+      'Een geleidelijke "verdwijning van de zieke mens" door toenemende abstractie en afstand',
+      'Een steeds grotere nadruk op het unieke verhaal van de individuele patiënt',
+      'Een afname van het gebruik van technologie in de diagnostiek',
+      'Een terugkeer naar de klassieke humoraalleer'
+    ],
+    correct:0,
+    explain:'Jewsons hoofdpunt was dat medische kennis steeds abstracter en afstandelijker werd, met een toenemende afstand tussen zorgverlener en patiënt, en tussen laboratorium en ziekenhuisbed — samengevat als de "verdwijning van de zieke mens uit de medische kosmologie".'
+  },
+  {
+    type:'single', domain:'Jewson-these algemeen',
+    q:'Hoe moeten de 5 denkkaders van de Jewson-these het beste worden opgevat?',
+    options:[
+      'Als onderling doordringende types die naast elkaar blijven bestaan, niet als strikt opeenvolgende fasen',
+      'Als volledig van elkaar gescheiden fasen die elkaar telkens compleet vervangen',
+      'Als vijf toevallige, ongerelateerde denkwijzen zonder enige chronologie',
+      'Als een vaste volgorde die elke individuele arts persoonlijk moet doorlopen'
+    ],
+    correct:0,
+    explain:'Hoewel er een historische, chronologische volgorde in te herkennen is, zijn de 5 kosmologieën geen scherp te onderscheiden fasen. Nieuwe vormen van geneeskunde bestaan naast de oude, soms in vreedzame co-existentie, soms op gespannen voet met elkaar.'
+  },
+  {
+    type:'match', domain:'Jewson-these algemeen',
+    q:'Koppel elk denkkader aan de bijbehorende benadering van ziekte.',
+    left:['Bedside medicine','Hospital medicine','Laboratory medicine','Surveillance medicine','E-scaped/informational medicine'],
+    right:[
+      'Wisselwerking tussen individu en omgeving',
+      'Plaats van pathologie (laesie in een orgaan)',
+      'Verstoorde functie en proces in de tijd',
+      'Continuüm tussen normaal en afwijkend',
+      'Geïndividualiseerd dataprofiel'
+    ],
+    correctMap:[0,1,2,3,4],
+    explain:'Elk denkkader hanteert een eigen ziektebegrip: bedside medicine kijkt naar de wisselwerking individu-omgeving, hospital medicine naar de plaats van pathologie, laboratory medicine naar verstoorde functie in de tijd, surveillance medicine naar een statistisch continuüm, en e-scaped/informational medicine naar een geïndividualiseerd dataprofiel.'
+  },
+  {
+    type:'order', domain:'Jewson-these algemeen',
+    q:'Zet de 5 denkkaders in de (globale) chronologische volgorde waarin ze zijn opgekomen.',
+    items:['Bedside medicine','Hospital medicine','Laboratory medicine','Surveillance medicine','E-scaped/informational medicine'],
+    correctOrder:[0,1,2,3,4],
+    explain:'Bedside medicine overheerste tot eind 18e eeuw, hospital medicine kwam rond 1800 op, laboratory medicine in de tweede helft van de 19e eeuw, surveillance medicine na 1900, en e-scaped/informational medicine werd in 2003 als vijfde kosmologie geïntroduceerd door Nettleton.'
+  },
+  {
+    type:'single', domain:'Bedside medicine',
+    q:'Wat stond centraal bij de diagnostiek binnen bedside medicine?',
+    options:['Het verhaal van de patiënt (de anamnese)','Lichamelijk onderzoek met instrumenten zoals de stethoscoop','Laboratoriumuitslagen en beeldvormende technieken','Statistische vergelijking met een referentiepopulatie'],
+    correct:0,
+    explain:'Bij bedside medicine stond het verhaal van de patiënt (de anamnese) centraal. Van lichamelijk onderzoek met instrumenten was nog nauwelijks sprake; dat gold destijds zelfs als ongepast.'
+  },
+  {
+    type:'single', domain:'Bedside medicine',
+    q:'Wat bedoelde Jewson met "epistemologische gelijkwaardigheid" binnen bedside medicine?',
+    options:[
+      'De mate van gedeelde medische kennis tussen arts en patiënt, die redelijk gelijk was',
+      'Het idee dat alle artsen exact dezelfde diagnoses stelden',
+      'Een wettelijke gelijkheid tussen ziekenhuizen onderling',
+      'De gelijke verdeling van medische kennis over alle sociale klassen'
+    ],
+    correct:0,
+    explain:'Epistemologische gelijkwaardigheid verwees naar de mate van gedeelde medische kennis tussen arts en patiënt: de goed geïnformeerde (en vaak welgestelde) leek kon destijds bijna op gelijke voet met zijn arts converseren.'
+  },
+  {
+    type:'single', domain:'Hospital medicine',
+    q:'Welke "lokalistische" opvatting van ziekte hoorde bij hospital medicine?',
+    options:[
+      'Ziekten hadden een aanwijsbare "zetel" in de vorm van laesies in specifieke organen',
+      'Ziekte was een disbalans tussen lichaamssappen',
+      'Ziekte was een statistische afwijking binnen een populatie',
+      'Ziekte was een verstoord informatieverwerkend proces'
+    ],
+    correct:0,
+    explain:'Binnen hospital medicine maakte de holistische benadering van ziekte plaats voor een lokalistische benadering: ziektes hadden "zetels" die herleid konden worden tot specifieke, aanwijsbare laesies in organen.'
+  },
+  {
+    type:'multi', domain:'Hospital medicine',
+    q:'Welke drie technieken stonden centraal in de diagnostiek en ziektedefinitie binnen hospital medicine? (meerdere antwoorden mogelijk)',
+    options:['Nauwkeurig lichamelijk onderzoek, o.a. met de stethoscoop','Autopsie, om ziekten aan laesies te koppelen','Statistische analyse van grote aantallen waarnemingen','Digitale dataverwerking via algoritmes'],
+    correct:[0,1,2],
+    explain:'Hospital medicine draaide om lichamelijk onderzoek (auscultatie, percussie, palpatie), autopsie om ziekten aan laesies te koppelen, en statistische analyse van waarnemingen bij levende en overleden patiënten. Digitale dataverwerking hoort bij een veel later denkkader (e-scaped/informational medicine).'
+  },
+  {
+    type:'single', domain:'Hospital medicine',
+    q:'Wat veranderde er in de rol van de patiënt bij de overgang van bedside naar hospital medicine?',
+    options:[
+      'De patiënt werd minder gezien als persoon met een eigen verhaal, en meer als een diagnostisch "geval"',
+      'De patiënt kreeg juist meer zeggenschap over de eigen behandeling',
+      'De patiënt werd voortaan uitsluitend nog thuis behandeld',
+      'Er veranderde in de praktijk niets aan de rol van de patiënt'
+    ],
+    correct:0,
+    explain:'In het ziekenhuis ging het vooral om het stellen van een diagnose. De patiënt werd minder gezien als persoon met een eigen verhaal, en meer als een "geval" dat hielp om medische kennis uit te breiden.'
+  },
+  {
+    type:'single', domain:'Laboratory medicine',
+    q:'Waarop richtte laboratory medicine zich vooral, in plaats van op anatomische afwijkingen?',
+    options:[
+      'Verstoorde (patho)fysiologische processen, vaak op microniveau van cellen en weefsels',
+      'Uitsluitend op de wisselwerking tussen individu en omgeving',
+      'Uitsluitend op statistische afwijkingen binnen een populatie',
+      'Uitsluitend op digitale gezondheidsdata'
+    ],
+    correct:0,
+    explain:'Laboratory medicine verschoof de aandacht van anatomische, gelokaliseerde afwijkingen naar verstoorde (patho)fysiologische processen op microniveau (cellen en weefsels), en van plaats naar tijd (ziekte als proces).'
+  },
+  {
+    type:'single', domain:'Laboratory medicine',
+    q:'Welk basisbegrip over interne lichaamsprocessen werd vanaf de late 19e eeuw invloedrijk binnen laboratory medicine?',
+    options:['Een "constante interne omgeving" of homeostatische balans','De disbalans tussen de vier lichaamssappen','Het statistische continuüm tussen normaal en afwijkend','Het lichaam als informatieverwerkend systeem'],
+    correct:0,
+    explain:'Het idee van een "constante interne omgeving" of homeostatische balans, gehandhaafd door fysiologische regelsystemen, werd vanaf de late 19e eeuw een invloedrijk basisbegrip binnen laboratory medicine.'
+  },
+  {
+    type:'single', domain:'Laboratory medicine',
+    q:'Wat wordt bedoeld met de "kloof tussen bench and bedside" die ontstond met de opkomst van laboratory medicine?',
+    options:[
+      'De groeiende afstand tussen laboratoriumonderzoek/wetenschap en de klinische praktijk',
+      'Een letterlijke fysieke afstand tussen ziekenhuizen en universiteiten',
+      'Het verdwijnen van het ziekenhuis als medische setting',
+      'Een conflict tussen artsen en verzekeraars'
+    ],
+    correct:0,
+    explain:'Onderzoekers in het laboratorium kwamen steeds verder af te staan van de patiënt, omdat hun carrière vooral afhankelijk was van de academische wereld. Dit vergrootte de afstand tussen laboratorium (bench) en kliniek (bedside), tussen wetenschap en praktijk.'
+  },
+  {
+    type:'case', domain:'Surveillance medicine',
+    vignette:'In de vroege twintigste eeuw werden (school)kinderen routinematig onderzocht op achterblijvende groei, gehoor- en visusproblemen en tekenen van tuberculose.',
+    q:'Wat was hierbij een hoofdkenmerk van deze nieuwe diagnostische benadering?',
+    options:[
+      'De focus lag op "normale" populaties, in plaats van op (groepen) patiënten met symptomen',
+      'De focus lag uitsluitend op besmettingsgevaar voor anderen',
+      'De benadering leunde uitsluitend op laboratoriumtechnieken, los van sociale aspecten',
+      'De focus lag primair op individuele leefstijlfactoren'
+    ],
+    correct:0,
+    explain:'Het routinematig onderzoeken van "gewone" schoolkinderen (in plaats van patiënten met klachten) illustreert de kern van surveillance medicine: het richten van diagnostiek op normale, asymptomatische populaties.'
+  },
+  {
+    type:'single', domain:'Surveillance medicine',
+    q:'Hoe wordt ziekte binnen surveillance medicine vooral opgevat?',
+    options:[
+      'Als een statistische afwijking van wat "normaal" is, met een continuüm in plaats van een scherpe grens',
+      'Als een scherp binair onderscheid tussen ziek en gezond',
+      'Als een specifieke, aanwijsbare laesie in een orgaan',
+      'Als een verhaal dat de patiënt zelf vertelt'
+    ],
+    correct:0,
+    explain:'Volgens Armstrong wordt ziekte binnen surveillance medicine gezien als een afwijking van wat statistisch "normaal" is. Er is een continuüm tussen normaal en afwijkend, in plaats van een scherpe grens tussen ziek en gezond.'
+  },
+  {
+    type:'single', domain:'Surveillance medicine',
+    q:'Bij wie ligt binnen surveillance medicine doorgaans het initiatief, in tegenstelling tot de traditionele arts-patiëntontmoeting?',
+    options:['Bij de overheid of volksgezondheidsinstantie','Uitsluitend bij de individuele patiënt zelf','Uitsluitend bij de behandelend huisarts','Bij de farmaceutische industrie'],
+    correct:0,
+    explain:'Waar in de traditionele ontmoeting het initiatief bij de patiënt ligt (die met klachten aanklopt), ligt bij surveillance medicine het initiatief bij de overheid of volksgezondheidsinstantie, bijvoorbeeld via screeningsprogramma\'s.'
+  },
+  {
+    type:'single', domain:'E-scaped/informational medicine',
+    q:'Wat wordt bedoeld met "scapes" volgens Sarah Nettleton?',
+    options:[
+      'Netwerken van technologie, organisaties en mensen waar grote hoeveelheden informatie doorheen stromen',
+      'Fysieke ziekenhuisafdelingen voor beeldvormende diagnostiek',
+      'Een nieuwe naam voor de klassieke lichaamssappen',
+      'Uitsluitend de digitale patiëntendossiers van één ziekenhuis'
+    ],
+    correct:0,
+    explain:'Nettleton spreekt van "scapes": netwerken van technologie, organisaties en mensen waar enorme hoeveelheden informatie doorheen stromen. Het lichaam wordt in deze visie gezien als een informatieverwerkend systeem.'
+  },
+  {
+    type:'single', domain:'E-scaped/informational medicine',
+    q:'Wat staat centraal binnen deze kosmologie qua klinische besluitvorming?',
+    options:[
+      'Evidence-based medicine: data en richtlijnen, in plaats van ervaring/intuïtie van de arts',
+      'Uitsluitend de klinische intuïtie van de individuele arts',
+      'Uitsluitend het verhaal van de patiënt, zoals bij bedside medicine',
+      'Uitsluitend postmortaal onderzoek'
+    ],
+    correct:0,
+    explain:'Binnen e-scaped/informational medicine staat evidence-based medicine centraal: klinische beslissingen worden minder gebaseerd op ervaring of intuïtie, en meer op wetenschappelijke data en richtlijnen.'
+  },
+  {
+    type:'single', domain:'E-scaped/informational medicine',
+    q:'Wat is volgens Nettleton het belangrijkste accentverschil met surveillance medicine?',
+    options:[
+      'Een nog sterkere nadruk op statistisch denken en geïndividualiseerde risicoprofielen op basis van grote hoeveelheden data',
+      'Een volledige terugkeer naar het lichamelijk onderzoek van hospital medicine',
+      'Het volledig verdwijnen van elke vorm van risicodenken',
+      'Een exclusieve focus op uitsluitend besmettelijke ziekten'
+    ],
+    correct:0,
+    explain:'E-scaped/informational medicine wordt nog sterker dan surveillance medicine gekenmerkt door statistisch denken en de verzameling van steeds grotere hoeveelheden data, gericht op steeds completere, geïndividualiseerde risicoprofielen.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hartfalen',
+    q:'Welke klachten werden rond 1800 nog niet direct met het hart in verband gebracht?',
+    options:['Kortademigheid en vocht in de benen','Hartkloppingen','Pijn op de borst','Plotselinge dood'],
+    correct:0,
+    explain:'Rond 1800 werden hartkloppingen, pijn op de borst en plotselinge dood al wel als aanwijzingen voor hartziekte gezien, maar kortademigheid en vocht in de benen — nu bekend als tekenen van hartfalen — nog niet direct.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hartfalen',
+    q:'Welke techniek introduceerde René Laennec rond 1816?',
+    options:['De stethoscoop (auscultatie)','Percussie','Het elektrocardiogram','De polygraaf'],
+    correct:0,
+    explain:'Laennec, leerling van Corvisart, vond rond 1816 de stethoscoop uit en introduceerde het gebruik van auscultatie in de geneeskunde. Percussie was al eerder door Corvisart bekend gemaakt.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hartfalen',
+    q:'Wat hield Hope\'s "backpressure theory" in?',
+    options:[
+      'Een slecht sluitende hartklep veroorzaakt terugstroming, waardoor stroomopwaarts druk opbouwt in de bloedsomloop',
+      'Het hart faalt uitsluitend door een tekort aan zuurstof in de hartspier zelf',
+      'Hartfalen wordt volledig veroorzaakt door een tekort aan bloedvolume',
+      'Klepafwijkingen hebben in het geheel geen effect op de bloedsomloop'
+    ],
+    correct:0,
+    explain:'Hope stelde dat een "incompetente" (slecht sluitende) hartklep leidt tot terugstroming van bloed, waardoor het hart overbelast raakt en stroomopwaarts (long- en systemische circulatie) druk opbouwt — de backpressure theory.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hartfalen',
+    q:'Wat introduceerde James Mackenzie als alternatief voor de backpressure theory?',
+    options:[
+      'De "forward failure theory", gebaseerd op de "reservekracht" van het hart tijdens inspanning',
+      'Een theorie die uitsluitend op autopsiebevindingen was gebaseerd',
+      'Het idee dat hartruis altijd een slechte prognose betekent',
+      'Een theorie die hartfalen volledig aan genetica toeschreef'
+    ],
+    correct:0,
+    explain:'Mackenzie introduceerde het begrip "reservekracht" van het hart: het vermogen om tijdens inspanning meer bloed te verplaatsen. Was deze reservekracht beperkt, dan was er sprake van hartfalen — de forward failure theory.'
+  },
+  {
+    type:'case', domain:'Geschiedenis van hartfalen',
+    vignette:'Hope onderzocht vooral ernstig zieke ziekenhuispatiënten, terwijl Mackenzie een veel algemenere populatie bestudeerde, onder andere in de huisartsenpraktijk.',
+    q:'Waarom leidde dit verschil in onderzochte populatie tot uiteenlopende conclusies over hartruis?',
+    options:[
+      'Bij Mackenzies gezondere populatie bleek hartruis vaak geen teken van ernstige ziekte, in tegenstelling tot bij Hopes zieke patiënten',
+      'Mackenzie gebruikte in het geheel geen stethoscoop, Hope wel',
+      'Hope onderzocht uitsluitend kinderen, Mackenzie uitsluitend volwassenen',
+      'Er was in werkelijkheid geen enkel verschil tussen beide populaties'
+    ],
+    correct:0,
+    explain:'Bij Hopes ernstig zieke ziekenhuispatiënten duidde hartruis meestal op serieuze pathologie. Bij Mackenzies veel gezondere, algemenere populatie kwam hartruis ook voor zonder dat dit een slechte prognose betekende — wat Mackenzie deed twijfelen aan het belang van hartruis op zich.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hartfalen',
+    q:'De "nieuwe cardiologie" van begin 20e eeuw sloot vooral aan bij welk denkkader?',
+    options:['Laboratory medicine, met nadruk op functie en prognose in plaats van anatomische lokalisatie','Bedside medicine, met nadruk op het verhaal van de patiënt','Surveillance medicine, met nadruk op bevolkingsonderzoek','E-scaped medicine, met nadruk op digitale data'],
+    correct:0,
+    explain:'De "nieuwe cardiologie", met instrumenten zoals het ECG, legde de nadruk op de functionele capaciteit en prognose van het hart in plaats van op de precieze anatomische lokalisatie van laesies — kenmerkend voor het denkkader van laboratory medicine.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hypertensie',
+    q:'Hoe werd hypertensie tot ver in de jaren 1950 vooral beschouwd?',
+    options:[
+      'Als een specifieke ziekte, waarbij een bloeddruk van 140/80 mmHg destijds geen zorgen baarde',
+      'Als een kwantitatieve risicofactor, net zoals tegenwoordig',
+      'Als een aandoening die volledig onbehandelbaar was in alle gevallen',
+      'Als een aandoening die uitsluitend bij kinderen voorkwam'
+    ],
+    correct:0,
+    explain:'Tot ver in de jaren 1950 betekende hypertensie iets heel anders dan nu: het was vooral een kwestie van artsenoordeel, en een bloeddruk van bijvoorbeeld 140/80 mmHg zou destijds geen wenkbrauwen doen fronsen.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hypertensie',
+    q:'Welke vorm van hypertensie werd vóór de jaren 1950 vrijwel als enige behandeld?',
+    options:['Maligne hypertensie, met acute en herkenbare symptomen','Milde, symptoomloze hypertensie','Uitsluitend "prehypertensie"','Alle vormen werden destijds gelijk behandeld'],
+    correct:0,
+    explain:'Alleen patiënten met maligne hypertensie — sterk verhoogde bloeddruk met duidelijke pathologische effecten en acute symptomen — kregen destijds behandeling.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hypertensie',
+    q:'Wat was de kern van Robert Platts opvatting over essentiële hypertensie?',
+    options:[
+      'Het was een specifieke ziekte met een eigen genetische oorzaak, bij een afgebakende groep "hypertensieven"',
+      'Het was slechts een kwantitatief uiteinde van een normale verdeling',
+      'Het kwam uitsluitend voor bij ziekenhuispatiënten met andere aandoeningen',
+      'Het had volgens hem geen enkele relatie met de nierfunctie'
+    ],
+    correct:0,
+    explain:'Platt betoogde dat er een specifiek gen bestond voor essentiële hypertensie, en dat de bevolking wat betreft bloeddruk verdeeld was in twee duidelijke groepen: een normale meerderheid en een onderscheiden groep "hypertensieve personen".'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hypertensie',
+    q:'Wat was de kern van George Pickerings opvatting, tegenover die van Platt?',
+    options:[
+      'Hypertensie is een kwantitatieve ziekte: het uiterste eind van een normale verdeling, zonder scherpe grens',
+      'Hypertensie is een specifieke, genetisch bepaalde aandoening',
+      'Hypertensie komt uitsluitend voor bij patiënten met nierziekten',
+      'Hypertensie was volgens hem nooit op enige wijze behandelbaar'
+    ],
+    correct:0,
+    explain:'Pickering vond geen bewijs voor twee afzonderlijke groepen (normaal versus hypertensief). Voor hem was hypertensie een kwantitatief verschijnsel: het uiterste eind van een normale verdeling van bloeddrukwaarden.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hypertensie',
+    q:'Waar was het begrip "risicofactor" oorspronkelijk afkomstig van?',
+    options:['De levensverzekeringsindustrie, die het als financieel risico gebruikte','De farmaceutische industrie, als marketingbegrip','De klassieke Griekse geneeskunde','De moderne epidemiologie van na het jaar 2000'],
+    correct:0,
+    explain:'Het concept "risicofactor" was afkomstig van de levensverzekeringsindustrie, die al in de jaren 1920 personen met asymptomatische hypertensie als een financieel hoogrisicogroep beschouwde voor het bepalen van verzekeringstarieven.'
+  },
+  {
+    type:'single', domain:'Geschiedenis van hypertensie',
+    q:'Wat veranderde er vanaf 1959 met de introductie van thiazidediuretica?',
+    options:[
+      'Massabehandeling van ook mildere vormen van hypertensie werd mogelijk, zonder eerst specifieke pathologie vast te stellen',
+      'Hypertensie werd vrijwel volledig onbehandelbaar',
+      'Alleen maligne hypertensie kon voortaan nog behandeld worden',
+      'De farmaceutische industrie trok zich terug uit dit onderzoeksgebied'
+    ],
+    correct:0,
+    explain:'Thiazidediuretica hadden relatief weinig bijwerkingen en maakten massabehandeling van ook mildere vormen van hypertensie mogelijk — waardoor het gerechtvaardigd werd om een loutere risicofactor te behandelen, zonder eerst specifieke pathologie vast te stellen.'
+  },
+  {
+    type:'open', domain:'Geschiedenis van hypertensie',
+    q:'Leg uit op welke wijze Pickerings stelling "hypertensie is een kwantitatieve ziekte" illustratief is voor het denkkader van surveillance medicine. Noem minimaal twee redenen.',
+    model:'Ten eerste wordt een "kwantitatieve" ziekte alleen vastgesteld op basis van numerieke gegevens, zonder dat de patiënt al symptomen hoeft te hebben. Ten tweede wordt hierbij een "derdepersoonsperspectief" gehanteerd: op basis van vergelijking met een referentiepopulatie wordt bepaald of een waarde afwijkend is. Ten derde is er bij een kwantitatieve ziekte een continuüm tussen normaal en afwijkend, zonder scherpe grens tussen ziek en gezond — kenmerkend voor de statistische, epidemiologische benadering van surveillance medicine.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwamen minimaal twee van de volgende naar voren — vaststelling zonder symptomen, het derdepersoonsperspectief (vergelijking met een referentiepopulatie), of het ontbreken van een scherpe grens tussen normaal en afwijkend?'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
