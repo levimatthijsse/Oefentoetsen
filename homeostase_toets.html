@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LME Introductie homeostase · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LME Introductie homeostase · Oefentoets</div>
+      <h1>Introductie homeostase</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 25</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Homeostase algemeen',
+    q:'Wat is de kern van de definitie van homeostase?',
+    options:['Het handhaven van een stabiele interne lichaamstoestand bij veranderingen in de omgeving','Het maximaliseren van de energieproductie in cellen','Het volledig uitschakelen van externe prikkels','Het voortdurend laten stijgen van lichaamsfuncties'],
+    correct:0,
+    explain:'Homeostase gaat over het onderhouden van een stabiele interne lichaamstoestand, zodat het organisme in leven blijft ondanks veranderingen in de interne of externe omgeving.'
+  },
+  {
+    type:'multi', domain:'Homeostase algemeen',
+    q:'Welke van de volgende worden gerekend tot de 10 klassieke homeostatisch gereguleerde variabelen? (meerdere antwoorden mogelijk)',
+    options:['Lichaamstemperatuur','Gemiddelde arteriële bloeddruk','Hartminuutvolume','Bloedglucoseconcentratie'],
+    correct:[0,1,3],
+    explain:'Lichaamstemperatuur, gemiddelde arteriële bloeddruk en bloedglucoseconcentratie horen tot de 10 klassieke homeostatische variabelen. Hartminuutvolume is juist een niet-homeostatische variabele die bijdraagt aan het stabiel houden van de bloeddruk.'
+  },
+  {
+    type:'single', domain:'Homeostase algemeen',
+    q:'Wat is volgens de module het gemeenschappelijke doel waarmee homeostatische variabelen bijdragen aan overleven?',
+    options:['Ze houden de cellulaire omgeving optimaal voor enzymfunctie','Ze maximaliseren de hoeveelheid energie in cellen','Ze optimaliseren uitsluitend de aan- en afvoer van stoffen','Ze zorgen voor maximale spierkracht'],
+    correct:0,
+    explain:'Homeostatische variabelen zorgen gezamenlijk voor een optimale cellulaire omgeving voor enzymfunctie — zonder functionerende enzymen zouden lichaamscellen afsterven.'
+  },
+  {
+    type:'single', domain:'Homeostatische vs. niet-homeostatische variabelen',
+    q:'Wat is het verschil tussen homeostatische en niet-homeostatische variabelen?',
+    options:[
+      'Niet-homeostatische variabelen worden zelf niet stabiel gehouden, maar dragen bij aan het stabiel houden van homeostatische variabelen',
+      'Niet-homeostatische variabelen zijn onbelangrijk voor het lichaam',
+      'Homeostatische variabelen worden actief gemanipuleerd om niet-homeostatische variabelen te sturen',
+      'Er bestaat in de praktijk geen enkel onderscheid tussen beide typen'
+    ],
+    correct:0,
+    explain:'Niet-homeostatische variabelen (zoals hartminuutvolume) worden zelf niet stabiel gehouden, maar worden juist door het lichaam gemanipuleerd om homeostatische variabelen (zoals bloeddruk) stabiel te houden.'
+  },
+  {
+    type:'single', domain:'Homeostatische vs. niet-homeostatische variabelen',
+    q:'Welke twee niet-homeostatische variabelen bepalen samen de gemiddelde arteriële bloeddruk?',
+    options:['Hartminuutvolume en perifere weerstand','Lichaamstemperatuur en bloedvolume','PaO2 en PaCO2','Bloedglucose en bloedosmolariteit'],
+    correct:0,
+    explain:'Hartminuutvolume (cardiac output) en perifere (vaat)weerstand zijn beide niet-homeostatische variabelen die samen de gemiddelde arteriële bloeddruk bepalen — één van de 10 homeostatische variabelen.'
+  },
+  {
+    type:'single', domain:'Homeostatische vs. niet-homeostatische variabelen',
+    q:'Zijn homeostatische variabelen belangrijker dan niet-homeostatische variabelen?',
+    options:[
+      'Nee, niet-homeostatische variabelen spelen ook een essentiële rol door de homeostatische variabelen te beïnvloeden',
+      'Ja, niet-homeostatische variabelen zijn in feite overbodig',
+      'Ja, want alleen homeostatische variabelen worden door het lichaam gereguleerd',
+      'Nee, want niet-homeostatische variabelen zijn in werkelijkheid ook homeostatisch'
+    ],
+    correct:0,
+    explain:'Hoewel homeostatische variabelen essentieel zijn voor overleven, spelen niet-homeostatische variabelen ook een belangrijke rol: ze worden door het lichaam gemanipuleerd om vervolgens de homeostatische variabelen te beïnvloeden.'
+  },
+  {
+    type:'case', domain:'Homeostatische vs. niet-homeostatische variabelen',
+    vignette:'De zuurstofconcentratie in de omgeving van een dier schommelt sterk over tijd.',
+    q:'Hoe reageert de arteriële zuurstofspanning (PaO2) van dit dier hierop?',
+    options:[
+      'Deze blijft stabiel, want PaO2 is een homeostatisch gereguleerde variabele',
+      'Deze schommelt in exact hetzelfde patroon mee met de omgeving',
+      'Deze daalt continu, ongeacht de omgevingszuurstof',
+      'Deze stijgt continu, ongeacht de omgevingszuurstof'
+    ],
+    correct:0,
+    explain:'PaO2 is een homeostatisch gereguleerde variabele en wordt door het lichaam stabiel gehouden, ook wanneer de omgevingszuurstof fluctueert.'
+  },
+  {
+    type:'single', domain:'Homeostatische vs. niet-homeostatische variabelen',
+    q:'Hoe reageert de ademhalingsfrequentie van hetzelfde dier op de schommelende omgevingszuurstof?',
+    options:[
+      'Deze schommelt juist mee, om de PaO2 stabiel te houden',
+      'Deze blijft volledig stabiel, want ademhalingsfrequentie is homeostatisch',
+      'Deze daalt altijd wanneer de omgevingszuurstof stijgt',
+      'Er is in het geheel geen verband tussen beide'
+    ],
+    correct:0,
+    explain:'Ademhalingsfrequentie is een niet-homeostatische variabele: deze past zich juist aan (schommelt mee) om de homeostatische variabele PaO2 stabiel te houden wanneer de omgevingszuurstof verandert.'
+  },
+  {
+    type:'single', domain:'De 5 kenmerken',
+    q:'Wat zijn de eerste twee (van de 5) gemeenschappelijke kenmerken van homeostatische variabelen?',
+    options:[
+      'Ze zijn geassocieerd met het bloed, en dragen bij aan overleven in een veranderende omgeving',
+      'Ze hebben altijd een vast setpoint en een trage sensor',
+      'Ze worden nooit door negatieve feedback gereguleerd',
+      'Ze zijn uitsluitend hormonaal van aard'
+    ],
+    correct:0,
+    explain:'De eerste twee kenmerken zijn: geassocieerd met (of gevonden in) het bloed, en bijdragen aan het overleven van het organisme in een veranderende omgeving. Daarna volgen: continu negatief feedbacksysteem, een sensor, en een setpoint in de integrator.'
+  },
+  {
+    type:'single', domain:'De 5 kenmerken',
+    q:'Waarom is het cruise-control-systeem van een auto een betere analogie voor homeostase dan een huisthermostaat?',
+    options:[
+      'Cruise control is een continu opererend systeem, een thermostaat werkt met een minder subtiele aan/uit-schakeling',
+      'Een thermostaat regelt in werkelijkheid sneller dan cruise control',
+      'Cruise control heeft in het geheel geen sensor nodig',
+      'Beide analogieën zijn in de fysiologie exact gelijkwaardig'
+    ],
+    correct:0,
+    explain:'Cruise control meet en corrigeert continu (vergelijkbaar met homeostatische systemen), terwijl een thermostaat met een minder subtiele aan/uit-knop werkt en dus minder op een continu opererend feedbacksysteem lijkt.'
+  },
+  {
+    type:'case', domain:'De 5 kenmerken',
+    vignette:'Jan eet op de bank drie chocoladerepen. Terwijl de suiker in zijn darmen wordt opgenomen, stijgt zijn bloedglucoseconcentratie.',
+    q:'Op welk moment zijn de glucosesensoren van Jans lichaam actief?',
+    options:['Altijd, ongeacht de chocoladerepen','Alleen vlak voordat hij begint met eten','Alleen tijdens het eten zelf','Alleen enige tijd na het eten'],
+    correct:0,
+    explain:'Bloedglucoseconcentratie is een homeostatisch gereguleerde variabele met een continu opererend negatief feedbacksysteem. De glucosesensoren meten dus altijd, ongeacht of Jan chocoladerepen eet of niet.'
+  },
+  {
+    type:'single', domain:'De 5 kenmerken',
+    q:'In de cruise-control-analogie: wat is de "integrator"?',
+    options:['De computer die het setpoint bevat en het inputsignaal vergelijkt om een outputsignaal te sturen','De sensor die de snelheid meet','Het gaspedaal zelf','De weg waarop de auto rijdt'],
+    correct:0,
+    explain:'De integrator (de cruise-control-computer) bevat het setpoint, ontvangt het inputsignaal van de sensor, en stuurt op basis daarvan een outputsignaal naar de effector (de gasaansturing).'
+  },
+  {
+    type:'single', domain:'De 5 kenmerken',
+    q:'Is de pupilreflex een homeostatisch gereguleerd systeem?',
+    options:['Nee, want niet elk negatief feedbacksysteem is een homeostatisch systeem','Ja, want het is een continu opererend negatief feedbacksysteem','Ja, want het heeft een sensor en een setpoint','Nee, want het is geen negatief feedbacksysteem'],
+    correct:0,
+    explain:'Alle homeostatische systemen zijn negatieve feedbacksystemen, maar niet ieder negatief feedbacksysteem is een homeostatisch systeem. De pupilreflex is hier een voorbeeld van.'
+  },
+  {
+    type:'match', domain:'Thermoregulatie',
+    q:'Koppel elk onderdeel van het thermoregulatiesysteem aan zijn rol.',
+    left:['Thermoreceptoren in huid en lichaam','Hypothalamus','Zweetklieren, huidbloedvaten en skeletspieren','Actiepotentialen naar de hypothalamus'],
+    right:['Sensor','Integrator met setpoint voor temperatuur','Effector','Inputsignaal'],
+    correctMap:[0,1,2,3],
+    explain:'Thermoreceptoren vormen de sensor, de hypothalamus is de integrator met het temperatuur-setpoint, zweetklieren/huidvaten/skeletspieren zijn de effectoren, en de actiepotentialen die naar de hypothalamus gestuurd worden vormen het inputsignaal.'
+  },
+  {
+    type:'single', domain:'Thermoregulatie',
+    q:'Wat doen de effectoren als de lichaamstemperatuur onder het setpoint van 37°C daalt?',
+    options:['Minder zweten, huidvaten vernauwen, en rillen door skeletspieren','Meer zweten en huidvaten verwijden','Uitsluitend de ademhalingsfrequentie verhogen','Uitsluitend de hartslag verlagen'],
+    correct:0,
+    explain:'Bij een te lage temperatuur produceren de zweetklieren minder zweet, vernauwen de huidbloedvaten (minder warmteverlies) en zorgen de skeletspieren voor rillen (warmteproductie) — samen verhogen deze effectoren de lichaamstemperatuur weer.'
+  },
+  {
+    type:'single', domain:'Bloedglucose homeostase',
+    q:'Welke rol vervullen de β-cellen van de pancreas in de bloedglucose-homeostase?',
+    options:['Sensor, inputsignaal én integrator tegelijk','Uitsluitend effector','Uitsluitend sensor, zonder verdere rol','Uitsluitend outputsignaal'],
+    correct:0,
+    explain:'De β-cellen detecteren zelf de glucoseconcentratie en reageren direct met insulineafgifte — zij vervullen dus tegelijk de rol van sensor, inputsignaal én integrator.'
+  },
+  {
+    type:'multi', domain:'Bloedglucose homeostase',
+    q:'Welke effecten heeft toegenomen insuline op het lichaam? (meerdere antwoorden mogelijk)',
+    options:['Meer glucose-opname in de meeste cellen','Remming van gluconeogenese in de lever','Stimulatie van glycogeensynthese in lever en spieren','Stimulatie van glycogenolyse in lever en spieren'],
+    correct:[0,1,2],
+    explain:'Insuline verhoogt de glucose-opname in cellen, remt de gluconeogenese én de glycogenolyse, en stimuleert juist de glycogeensynthese. Al deze effecten samen verlagen de bloedglucoseconcentratie.'
+  },
+  {
+    type:'single', domain:'Bloedglucose homeostase',
+    q:'Wat doen de α-cellen van de pancreas bij een dalende bloedglucoseconcentratie?',
+    options:['Ze scheiden glucagon uit','Ze scheiden extra insuline uit','Ze stoppen volledig met functioneren','Ze scheiden cortisol uit'],
+    correct:0,
+    explain:'Bij een dalende bloedglucoseconcentratie scheiden de α-cellen van de pancreas glucagon uit, met het tegenovergestelde effect van insuline.'
+  },
+  {
+    type:'single', domain:'Thyroid-hormoonas',
+    q:'Waarom worden T3 en T4 niet als homeostatisch gereguleerde variabelen beschouwd, ondanks de aanwezige negatieve feedback?',
+    options:[
+      'Er is geen negatieve feedback op de initiële stimulus (lichaamstemperatuur), en er is geen vast setpoint voor T3/T4 zelf',
+      'T3 en T4 komen niet in het bloed voor',
+      'T3 en T4 dragen niet bij aan overleven in een veranderende omgeving',
+      'Er is bij T3/T4 in het geheel geen sprake van enige feedback'
+    ],
+    correct:0,
+    explain:'T3 en T4 voldoen aan 3 van de 5 kenmerken, maar niet aan alle 5: de negatieve feedback werkt alleen op TRH/TSH-afgifte, niet op de initiële stimulus (temperatuur), en er is geen vast setpoint voor T3/T4 zelf.'
+  },
+  {
+    type:'single', domain:'Thyroid-hormoonas',
+    q:'Hoe past de thyroid-hormoonas in het grotere systeem rond lichaamstemperatuur?',
+    options:[
+      'Als onderdeel van het outputsignaal/effectorpad van het temperatuur-homeostasesysteem',
+      'Als een volledig zelfstandig, eigen homeostatisch systeem',
+      'Als de sensor van het temperatuursysteem',
+      'Als het setpoint van het temperatuursysteem'
+    ],
+    correct:0,
+    explain:'De TRH-TSH-T3/T4-signalering kan gezien worden als outputsignaal van de hypothalamus (integrator met temperatuur-setpoint), met de door T3/T4 gestimuleerde hitteproductie als effector binnen het temperatuur-homeostasesysteem.'
+  },
+  {
+    type:'case', domain:'Setpoints',
+    vignette:'Iemand krijgt koorts en het setpoint voor lichaamstemperatuur stijgt tijdelijk boven 37°C.',
+    q:'Waarom heeft deze persoon het koud bij het begin van de koorts?',
+    options:[
+      'De lichaamstemperatuur ligt op dat moment lager dan het nieuwe (verhoogde) setpoint',
+      'De lichaamstemperatuur is op dat moment lager dan 37°C',
+      'De lichaamstemperatuur stijgt op dat moment al boven 37°C',
+      'Het setpoint is op dat moment juist gedaald'
+    ],
+    correct:0,
+    explain:'Bij het begin van koorts is het setpoint al gestegen, maar de werkelijke lichaamstemperatuur nog niet. Omdat de temperatuur dus lager is dan het nieuwe setpoint, ervaart de persoon kou — precies zoals bij een normale temperatuurdaling.'
+  },
+  {
+    type:'single', domain:'Setpoints',
+    q:'Wat toont het voorbeeld van koorts vooral aan over homeostatische setpoints?',
+    options:['Setpoints kunnen tijdelijk veranderen; ze zijn niet altijd volledig vast','Setpoints zijn altijd volledig onveranderlijk','Setpoints bestaan uitsluitend voor lichaamstemperatuur','Setpoints kunnen nooit door ziekte worden beïnvloed'],
+    correct:0,
+    explain:'Koorts laat zien dat het setpoint voor lichaamstemperatuur (normaal ~37°C) tijdelijk kan veranderen, bijvoorbeeld bij ziekte — setpoints zijn dus niet per definitie vast.'
+  },
+  {
+    type:'single', domain:'Hiërarchie',
+    q:'Wat betekent het dat bloed-pH hoger in de homeostase-hiërarchie staat dan PaCO2?',
+    options:[
+      'Het handhaven van de pH krijgt voorrang, ook als dit ten koste gaat van de PaCO2-setpointwaarde',
+      'PaCO2 en pH worden nooit door dezelfde effectoren aangestuurd',
+      'PaCO2 krijgt in alle gevallen voorrang boven de pH',
+      'Hiërarchie betekent dat beide variabelen exact even belangrijk zijn'
+    ],
+    correct:0,
+    explain:'Bloed-pH en PaCO2 worden door dezelfde effectoren (diafragma en ademhalingsspieren) aangestuurd. Omdat pH hoger in de hiërarchie staat, krijgt het herstel van de pH voorrang boven het handhaven van de PaCO2-setpointwaarde.'
+  },
+  {
+    type:'case', domain:'Hiërarchie',
+    vignette:'Een metabole stoornis beïnvloedt de bloed-pH van een patiënt. Ter compensatie verandert de activiteit van de ademhalingsspieren.',
+    q:'Wat is hiervan het te verwachten gevolg voor de PaCO2?',
+    options:[
+      'De PaCO2 kan buiten zijn normale setpointwaarde komen te liggen, doordat de pH voorrang krijgt',
+      'De PaCO2 blijft in dit geval altijd exact binnen de setpointwaarde',
+      'De pH-waarde zal in dat geval juist nooit herstellen',
+      'Er is in het geheel geen effect op de PaCO2 te verwachten'
+    ],
+    correct:0,
+    explain:'Doordat bloed-pH hoger in de hiërarchie staat, sturen de ademhalingsspieren primair op herstel van de pH. Dit kan ertoe leiden dat de PaCO2 buiten zijn eigen setpointwaarde (34–45 mmHg) komt te liggen.'
+  },
+  {
+    type:'open', domain:'Hiërarchie',
+    q:'Leg uit waarom hetzelfde effector-orgaan (diafragma/ademhalingsspieren) soms de bloed-pH herstelt ten koste van een afwijkende PaCO2.',
+    model:'Zowel bloed-pH als PaCO2 worden aangestuurd door dezelfde effectoren (diafragma en ademhalingsspieren). Omdat bloed-pH hoger in de homeostatische hiërarchie staat dan PaCO2, krijgt het herstellen van de pH voorrang. Bij een conflict tussen beide setpoints (bijvoorbeeld door een metabole stoornis) zullen de ademhalingsspieren zo reageren dat de pH weer richting de setpointwaarde (7,35–7,45) gaat, ook als de PaCO2 daardoor buiten zijn eigen setpointwaarde (34–45 mmHg) komt te liggen.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam naar voren dat beide variabelen dezelfde effectoren delen, en dat de hogere positie van pH in de hiërarchie bepaalt welke variabele voorrang krijgt bij een conflict?'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
