@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>LMO Spelen met farmacokinetiek · Oefentoets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B3A4B;
+    --navy-2:#274C61;
+    --paper:#F7F5F1;
+    --card:#FFFFFF;
+    --line:#E4E0D8;
+    --ink:#1D2321;
+    --muted:#6B675E;
+    --gold:#C79A44;
+    --correct:#2E7D53;
+    --incorrect:#B33F32;
+    --badge-2:#5B7B8C;
+    --badge-3:#8A5A78;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;
+    min-height:100vh;
+    padding:12px 10px 16px;
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  .masthead{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--navy);
+  }
+  h1{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:18px;
+    margin:1px 0 0;
+    color:var(--ink);
+  }
+  .counter{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--muted);
+  }
+
+  .progress-track{display:flex;gap:3px;margin:0 0 10px;}
+  .seg{flex:1;height:3px;border-radius:2px;background:var(--line);transition:background .2s;}
+  .seg.filled{background:var(--navy);}
+  .seg.active{background:var(--gold);}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-top:3px solid var(--navy);
+    border-radius:9px;
+    padding:14px 16px 14px;
+    box-shadow:0 1px 3px rgba(20,20,15,0.05), 0 12px 28px -18px rgba(20,20,15,0.25);
+  }
+  .domain-tag{
+    display:inline-block;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--navy);
+    background:rgba(27,58,75,0.08);
+    padding:2px 8px;
+    border-radius:4px;
+    margin-bottom:7px;
+  }
+  .vignette{
+    font-style:italic;
+    font-family:'Source Serif 4',serif;
+    font-size:12.5px;
+    color:var(--muted);
+    border-left:2px solid var(--gold);
+    padding-left:10px;
+    margin-bottom:9px;
+    line-height:1.45;
+  }
+  .question{
+    font-family:'Source Serif 4',serif;
+    font-weight:600;
+    font-size:15px;
+    line-height:1.35;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hint{
+    font-size:10px;
+    font-weight:600;
+    color:var(--muted);
+    margin:-6px 0 8px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:5px;margin-bottom:3px;}
+  .opt{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:7px 30px 7px 10px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:var(--paper);
+    cursor:pointer;
+    font-size:12.5px;
+    line-height:1.3;
+    transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:var(--navy-2);}
+  .opt.selected{border-color:var(--navy);background:rgba(27,58,75,0.06);}
+  .opt.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .opt.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .opt .marker{
+    width:14px;height:14px;flex:0 0 14px;
+    border:1.5px solid var(--muted);
+    border-radius:50%;
+  }
+  .opt.multi .marker{border-radius:4px;}
+  .opt.selected .marker{border-color:var(--navy);background:var(--navy);}
+  .opt.correct .marker{border-color:var(--correct);background:var(--correct);}
+  .opt.incorrect .marker{border-color:var(--incorrect);background:var(--incorrect);}
+  .opt.correct::after{
+    content:'✓';font-weight:700;font-size:13px;color:var(--correct);
+    position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  }
+  .opt.incorrect::after{
+    content:'✗';font-weight:700;font-size:12px;color:var(--incorrect);
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  }
+
+  /* match & order */
+  .match-hint{font-size:10px;color:var(--muted);margin-bottom:6px;display:block;}
+  .match-grid{display:flex;gap:10px;margin-bottom:3px;}
+  .match-col{flex:1;display:flex;flex-direction:column;gap:5px;}
+  .match-item{
+    padding:7px 8px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:6px;
+  }
+  .match-item .badge{
+    width:15px;height:15px;flex:0 0 15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9px;font-weight:700;color:var(--card);
+    visibility:hidden;
+  }
+  .match-item.active{border-color:var(--navy);}
+  .match-item.paired .badge{visibility:visible;}
+  .match-item.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .match-item.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+
+  .order-pool{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px;}
+  .order-chip{
+    padding:6px 9px;border:1px solid var(--line);border-radius:5px;
+    background:var(--paper);font-size:11.5px;cursor:pointer;
+  }
+  .order-chip.used{opacity:.35;cursor:default;}
+  .order-seq{
+    min-height:32px;
+    border:1px dashed var(--navy-2);
+    border-radius:5px;
+    padding:6px;
+    display:flex;flex-wrap:wrap;gap:5px;
+    margin-bottom:5px;
+    background:var(--paper);
+  }
+  .order-seq .order-chip{background:rgba(27,58,75,0.06);border-color:var(--navy);cursor:default;}
+  .order-seq .order-chip.correct{border-color:var(--correct);background:rgba(46,125,83,0.09);}
+  .order-seq .order-chip.incorrect{border-color:var(--incorrect);background:rgba(179,63,50,0.09);}
+  .undo-btn{
+    font-size:10px;font-weight:600;color:var(--muted);
+    background:none;border:none;cursor:pointer;padding:0;margin-bottom:7px;
+    text-decoration:underline;
+  }
+
+  /* hotspot */
+  .hotspot-svg{width:100%;height:auto;margin-bottom:8px;}
+  .hotspot-pt{cursor:pointer;fill:var(--paper);stroke:var(--muted);stroke-width:1.5;}
+  .hotspot-pt.selected{fill:var(--navy);stroke:var(--navy);}
+  .hotspot-pt.correct{fill:var(--correct);stroke:var(--correct);}
+  .hotspot-pt.incorrect{fill:var(--incorrect);stroke:var(--incorrect);}
+  .hotspot-label{font-size:11px;fill:var(--muted);}
+
+  textarea{
+    width:100%;min-height:90px;background:var(--paper);
+    border:1px solid var(--line);border-radius:6px;color:var(--ink);
+    font-family:'Source Sans 3',sans-serif;font-size:14px;padding:12px;resize:vertical;
+    margin-bottom:12px;
+  }
+  .model-answer{
+    background:rgba(199,154,68,0.12);border:1px solid var(--gold);
+    border-radius:6px;padding:14px;font-size:14px;line-height:1.6;margin-bottom:14px;
+  }
+  .model-answer .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy);display:block;margin-bottom:6px;}
+  .self-check{display:flex;gap:10px;margin-bottom:6px;}
+
+  .explain{
+    margin-top:8px;padding:8px 11px;border-radius:5px;
+    background:var(--paper);
+    font-size:11.5px;line-height:1.5;color:var(--ink);
+    border-left:3px solid var(--navy);
+  }
+
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+  button.btn{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:11.5px;
+    padding:7px 14px;border-radius:5px;border:none;cursor:pointer;
+    background:var(--navy);color:var(--card);
+  }
+  button.btn:disabled{opacity:.35;cursor:not-allowed;}
+  button.btn.ghost{background:none;border:1px solid var(--muted);color:var(--ink);}
+
+  /* end screen */
+  .score-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);}
+  .score-big{font-family:'Source Serif 4',serif;font-weight:700;font-size:32px;color:var(--navy);margin:3px 0 0;}
+  .domain-bars{margin:12px 0;display:flex;flex-direction:column;gap:6px;}
+  .domain-row{display:flex;align-items:center;gap:8px;font-size:10.5px;}
+  .domain-name{width:135px;flex:0 0 135px;color:var(--muted);font-size:9.5px;font-weight:600;}
+  .domain-bar-track{flex:1;height:4px;background:var(--line);border-radius:3px;overflow:hidden;}
+  .domain-bar-fill{height:100%;background:var(--gold);}
+  .domain-frac{width:28px;text-align:right;color:var(--muted);font-size:9.5px;}
+
+  .miss-item{border-top:1px solid var(--line);padding:8px 0;}
+  .miss-q{font-family:'Source Serif 4',serif;font-weight:600;font-size:12.5px;margin-bottom:3px;}
+  .miss-explain{font-size:11px;color:var(--muted);line-height:1.45;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="masthead">
+    <div>
+      <div class="eyebrow">LMO Spelen met farmacokinetiek · Oefentoets</div>
+      <h1>Klaring, halfwaardetijd, Vd &amp; dosering</h1>
+    </div>
+    <div class="counter" id="counter">Vraag 1 / 25</div>
+  </div>
+
+  <div class="progress-track" id="progressTrack"></div>
+
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const BADGE_COLORS = ['#1B3A4B','#C79A44','#5B7B8C','#8A5A78'];
+
+const QUESTIONS = [
+  {
+    type:'single', domain:'Klaring (CL)',
+    q:'Wat is klaring (CL), precies omschreven?',
+    options:[
+      'Het volume plasma dat per tijdseenheid volledig van het geneesmiddel wordt gezuiverd',
+      'De hoeveelheid geneesmiddel die per tijdseenheid wordt uitgescheiden',
+      'De totale hoeveelheid geneesmiddel die in het lichaam aanwezig is',
+      'De tijd die nodig is om de helft van het geneesmiddel te elimineren'
+    ],
+    correct:0,
+    explain:'Klaring is een volumebegrip: het volume plasma dat per tijdseenheid volledig van het geneesmiddel wordt "gezuiverd" (mL/min of L/uur) — niet de hoeveelheid die per tijdseenheid verdwijnt (dat is de excretiesnelheid).'
+  },
+  {
+    type:'single', domain:'Klaring (CL)',
+    q:'Waarom is klaring, in tegenstelling tot excretiesnelheid, meestal een constante?',
+    options:[
+      'Klaring is een orgaan-/geneesmiddeleigenschap die (bij therapeutische doses) onafhankelijk is van de concentratie',
+      'Klaring hangt net als excretiesnelheid recht evenredig af van de concentratie',
+      'Klaring verandert voortdurend met de tijd, ongeacht de concentratie',
+      'Klaring is uitsluitend constant bij intraveneuze toediening'
+    ],
+    correct:0,
+    explain:'Klaring is voor de meeste geneesmiddelen bij therapeutische doses een constante: een eigenschap van orgaan en geneesmiddel. Dit is precies wat first-order kinetiek betekent — het geëlimineerde percentage per tijdseenheid is constant, niet de hoeveelheid.'
+  },
+  {
+    type:'single', domain:'Klaring (CL)',
+    q:'Wat is de formule voor de steady-state plasmaconcentratie (Cpss) bij continue toediening?',
+    options:['Cpss = dose rate / CL','Cpss = CL / dose rate','Cpss = Vd × dose rate','Cpss = dose rate × t½'],
+    correct:0,
+    explain:'Cpss = dose rate / CL is de belangrijkste formule in de klinische farmacokinetiek: de uiteindelijke plasmaspiegel wordt volledig bepaald door de verhouding tussen toedieningssnelheid en klaring.'
+  },
+  {
+    type:'case', domain:'Klaring (CL)',
+    vignette:'Twee patiënten krijgen via continu infuus exact dezelfde dose rate van een geneesmiddel, maar patiënt B heeft een duidelijk lagere klaring dan patiënt A.',
+    q:'Wat is het gevolg voor patiënt B, vergeleken met patiënt A?',
+    options:[
+      'Patiënt B bouwt op naar een hogere steady-state concentratie',
+      'Patiënt B bouwt op naar een lagere steady-state concentratie',
+      'Beide patiënten bereiken exact dezelfde Cpss',
+      'Patiënt B bereikt in het geheel geen steady state'
+    ],
+    correct:0,
+    explain:'Omdat Cpss = dose rate / CL, bouwt de patiënt met de lagere klaring (patiënt B) op naar een hogere steady-state concentratie bij dezelfde dose rate.'
+  },
+  {
+    type:'single', domain:'Klaring (CL)',
+    q:'Wat is het klinische gevolg als de klaring van een patiënt daalt (bijv. door nier- of leverfunctiestoornis) terwijl de dosering ongewijzigd blijft?',
+    options:[
+      'De steady-state concentratie stijgt evenredig, met risico op toxiciteit',
+      'De steady-state concentratie daalt evenredig',
+      'Er verandert in dat geval niets aan de Cpss',
+      'De halfwaardetijd wordt daardoor juist korter'
+    ],
+    correct:0,
+    explain:'Bij een dalende klaring en gelijkblijvende dosering stijgt de steady-state concentratie evenredig, met risico op toxiciteit. Daarom wordt bij orgaanfunctiestoornissen de dosering proportioneel verlaagd.'
+  },
+  {
+    type:'single', domain:'Klaring (CL)',
+    q:'Waaruit bestaat de totale lichaamsklaring van een geneesmiddel?',
+    options:[
+      'De som van renale klaring, hepatische klaring en eventuele andere routes',
+      'Uitsluitend de renale klaring',
+      'Uitsluitend de hepatische klaring',
+      'Het verdelingsvolume gedeeld door de halfwaardetijd'
+    ],
+    correct:0,
+    explain:'CL(totaal) = CL(renaal) + CL(hepatisch) + eventuele andere routes. De fractie die onveranderd renaal wordt uitgescheiden heet fe; de rest wordt overwegend hepatisch gemetaboliseerd.'
+  },
+  {
+    type:'single', domain:'Halfwaardetijd',
+    q:'Wat is het kenmerk van first-order eliminatiekinetiek?',
+    options:[
+      'Een constante fractie van de aanwezige hoeveelheid wordt per tijdseenheid geëlimineerd',
+      'Een constante absolute hoeveelheid wordt per tijdseenheid geëlimineerd',
+      'De eliminatiesnelheid is volledig onafhankelijk van de aanwezige hoeveelheid',
+      'Er wordt per tijdseenheid steeds meer geëlimineerd, ongeacht de hoeveelheid'
+    ],
+    correct:0,
+    explain:'Bij first-order kinetiek is de eliminatiesnelheid evenredig met de aanwezige hoeveelheid, maar blijft de fractie die per tijdseenheid verdwijnt gelijk. Dit geeft een exponentiële afname: Cp(t) = Cp(0) × e^(−k·t).'
+  },
+  {
+    type:'single', domain:'Halfwaardetijd',
+    q:'Wat gebeurt er als je een first-order eliminatiecurve op een logaritmische y-as uitzet?',
+    options:['De curve wordt een rechte lijn','De curve wordt een steeds steilere curve','De curve verandert niet van vorm','De curve wordt een horizontale lijn'],
+    correct:0,
+    explain:'Op een logaritmische y-as wordt de exponentieel dalende curve een rechte lijn — het bewijs dat de halveringstijd overal langs de curve gelijk is, ongeacht de startconcentratie.'
+  },
+  {
+    type:'single', domain:'Halfwaardetijd',
+    q:'Wat is de formule voor de halfwaardetijd (t½)?',
+    options:['t½ = 0,693 × Vd / CL','t½ = CL / Vd','t½ = Vd × CL','t½ = 0,693 × CL / Vd'],
+    correct:0,
+    explain:'t½ = 0,693 × Vd / CL. De halfwaardetijd is geen onafhankelijke eigenschap, maar een afgeleide grootheid van het verdelingsvolume en de klaring.'
+  },
+  {
+    type:'single', domain:'Halfwaardetijd',
+    q:'Waarom heeft een groter verdelingsvolume (Vd), bij gelijkblijvende klaring, een langere halfwaardetijd tot gevolg?',
+    options:[
+      'Het geneesmiddel "verstopt" zich grotendeels buiten het plasma, buiten bereik van lever en nier op elk moment',
+      'Een groter Vd verhoogt automatisch ook de klaring',
+      'Een groter Vd betekent dat er minder geneesmiddel in het lichaam aanwezig is',
+      'Dit verband bestaat in werkelijkheid niet'
+    ],
+    correct:0,
+    explain:'Een geneesmiddel dat zich wijd over het lichaam verspreidt, bevindt zich grotendeels buiten het bereik van lever en nier op elk gegeven moment. Daardoor duurt het langer voordat de totale hoeveelheid (en dus de plasmaspiegel) is gehalveerd, ook al werkt de klarende machinerie even hard door.'
+  },
+  {
+    type:'single', domain:'Halfwaardetijd',
+    q:'Na hoeveel halfwaardetijden is een geneesmiddel bij een eenmalige dosis voor meer dan 90% uit het lichaam verdwenen?',
+    options:['Ongeveer 4 tot 5 halfwaardetijden','Ongeveer 1 halfwaardetijd','Ongeveer 10 halfwaardetijden','Dit is nooit te voorspellen op basis van t½'],
+    correct:0,
+    explain:'Als praktische vuistregel geldt: na ongeveer 4 tot 5 halfwaardetijden is een geneesmiddel bij eenmalige dosis voor >90% verdwenen — en is bij herhaalde toediening de steady state vrijwel volledig bereikt.'
+  },
+  {
+    type:'single', domain:'Verdelingsvolume (Vd)',
+    q:'Wat beantwoordt het verdelingsvolume (Vd) eigenlijk?',
+    options:[
+      'Hoe groot het lichaam zou moeten zijn om de gemeten hoeveelheid bij de gemeten plasmaconcentratie te bevatten',
+      'Het daadwerkelijke anatomische volume waarin een geneesmiddel zich bevindt',
+      'Het volume plasma dat volledig van het geneesmiddel wordt gezuiverd',
+      'De tijd die nodig is om het geneesmiddel over het lichaam te verdelen'
+    ],
+    correct:0,
+    explain:'Vd = Ab/Cp beantwoordt de vraag hoe groot het lichaam zou moeten zijn om de gemeten hoeveelheid te bevatten bij de gemeten plasmaconcentratie. Het is dus geen anatomisch volume, maar een rekenkundige maat.'
+  },
+  {
+    type:'single', domain:'Verdelingsvolume (Vd)',
+    q:'Een geneesmiddel dat sterk eiwitgebonden is en grotendeels in het plasma blijft, heeft welk soort Vd?',
+    options:['Een laag Vd, dicht bij het werkelijke plasmavolume','Een hoog Vd, vele malen groter dan het lichaamsvolume','Een Vd dat exact gelijk is aan het totale lichaamswater','Vd is in dit geval niet te berekenen'],
+    correct:0,
+    explain:'Een geneesmiddel dat in het plasma blijft (groot molecuul, sterk eiwitgebonden) heeft een laag Vd, dicht bij het werkelijke plasmavolume (~5 L).'
+  },
+  {
+    type:'single', domain:'Verdelingsvolume (Vd)',
+    q:'Wat is de formule voor de oplaaddosis (loading dose)?',
+    options:['Loading dose = Vd × gewenste Cp','Loading dose = CL × gewenste Cp','Loading dose = Vd / gewenste Cp','Loading dose = t½ × gewenste Cp'],
+    correct:0,
+    explain:'Loading dose = Vd × gewenste Cp. Deze formule geeft de dosis die nodig is om in één keer de gewenste startconcentratie te bereiken.'
+  },
+  {
+    type:'single', domain:'Verdelingsvolume (Vd)',
+    q:'Waarom heeft een geneesmiddel met een groot Vd een grotere oplaaddosis nodig?',
+    options:[
+      'Er moet relatief veel geneesmiddel de weefsels "vullen" voordat de plasmaspiegel het gewenste niveau bereikt',
+      'Een groot Vd betekent dat het geneesmiddel sneller wordt afgebroken',
+      'Een groot Vd verlaagt automatisch de benodigde dosis',
+      'Dit verband bestaat in de praktijk niet'
+    ],
+    correct:0,
+    explain:'Bij een groot Vd verdeelt het geneesmiddel zich sterk over de weefsels. Er moet relatief veel geneesmiddel de weefsels "vullen" voordat de (gemeten) plasmaspiegel het gewenste niveau bereikt — vandaar een grotere oplaaddosis.'
+  },
+  {
+    type:'single', domain:'Steady state & accumulatie',
+    q:'Waarvan hangt de tijd tot steady state bij herhaalde toediening uitsluitend af?',
+    options:['De halfwaardetijd (ongeveer 4-5× t½)','De grootte van de toegediende dosis','De lengte van het doseerinterval','Zowel dosisgrootte als doseerinterval samen'],
+    correct:0,
+    explain:'De tijd tot steady state hangt uitsluitend af van de halfwaardetijd (ongeveer 4-5× t½), niet van de dosisgrootte of het doseerinterval.'
+  },
+  {
+    type:'single', domain:'Steady state & accumulatie',
+    q:'Wat verandert er als je de dosis verhoogt of het doseerinterval verkort, zonder de halfwaardetijd te veranderen?',
+    options:[
+      'Een hogere steady-state spiegel, maar niet sneller bereikt',
+      'Steady state wordt sneller bereikt, op een gelijk niveau',
+      'Zowel een hogere spiegel als een snellere steady state',
+      'Er verandert dan in het geheel niets'
+    ],
+    correct:0,
+    explain:'Een grotere dosis of een korter interval geeft een hogere steady-state spiegel, maar bereikt die niet sneller — de tijd tot steady state blijft afhankelijk van uitsluitend de halfwaardetijd.'
+  },
+  {
+    type:'case', domain:'Doseringsstrategieën',
+    vignette:'Een patiënt start een geneesmiddel oraal, zonder oplaaddosis, bij een normaal vast doseerinterval.',
+    q:'Hoe lang moet deze patiënt ongeveer wachten tot steady state is bereikt?',
+    options:['Ongeveer 4-5 halfwaardetijden','Precies 1 doseerinterval','Onmiddellijk; oraal geeft altijd direct steady state','Dit hangt uitsluitend af van de dosisgrootte'],
+    correct:0,
+    explain:'Zonder oplaaddosis moet de patiënt de volle 4-5 halfwaardetijden wachten tot steady state is bereikt. Een oplaaddosis zou de concentratie in één keer op het gewenste niveau kunnen brengen.'
+  },
+  {
+    type:'single', domain:'Doseringsstrategieën',
+    q:'Wat is het belangrijkste verschil tussen IV- en orale toediening op de plasmaconcentratiecurve?',
+    options:[
+      'IV geeft direct een piek op t=0 zonder absorptiefase; oraal kent een geleidelijke stijging tot Cmax op Tmax',
+      'Oraal geeft altijd een hogere piek dan IV bij dezelfde dosis',
+      'IV kent juist een absorptiefase, oraal niet',
+      'Er is in de praktijk geen verschil tussen beide routes'
+    ],
+    correct:0,
+    explain:'IV geeft direct de volledige dosis in de circulatie (piek op t=0, geen absorptiefase). Oraal kent een absorptiefase met geleidelijke stijging tot Cmax op Tmax, met een lagere en latere piek bij dezelfde dosis.'
+  },
+  {
+    type:'single', domain:'Doseringsstrategieën',
+    q:'Wat is het voordeel van een slow-release formulering ten opzichte van een direct afgevende tablet?',
+    options:[
+      'Een vlakkere curve met minder risico dat de piek de MTC overschrijdt of het dal onder de MEC zakt',
+      'Een veel hogere piekconcentratie bij dezelfde dosis',
+      'Een aanzienlijk kortere werkingsduur',
+      'De noodzaak om vaker per dag te doseren'
+    ],
+    correct:0,
+    explain:'Een slow-release formulering geeft dezelfde totale dosis geleidelijker af, wat een vlakkere curve en een langer mogelijk doseerinterval oplevert — met minder risico dat de piek de MTC overschrijdt of het dal onder de MEC zakt.'
+  },
+  {
+    type:'single', domain:'Orale beschikbaarheid (F)',
+    q:'Wat zijn de twee hindernissen die de orale beschikbaarheid (F) samen bepalen?',
+    options:[
+      'Absorptie door de darmwand, en first-pass (presystemisch) metabolisme',
+      'Uitsluitend renale klaring en hepatische klaring',
+      'Uitsluitend het verdelingsvolume en de halfwaardetijd',
+      'De oplaaddosis en het doseerinterval'
+    ],
+    correct:0,
+    explain:'F wordt bepaald door twee opeenvolgende hindernissen: absorptie (kan het molecuul de darmwand oversteken?) en first-pass metabolisme (wordt het onderweg alsnog afgebroken, met name bij eerste passage door de lever?).'
+  },
+  {
+    type:'single', domain:'Orale beschikbaarheid (F)',
+    q:'Wat is de formule voor orale biobeschikbaarheid (F)?',
+    options:['F = AUC(oraal) / AUC(intraveneus)','F = AUC(intraveneus) / AUC(oraal)','F = Cmax(oraal) / Cmax(intraveneus)','F = Tmax(oraal) / Tmax(intraveneus)'],
+    correct:0,
+    explain:'F = AUC(oraal) / AUC(intraveneus). De totale blootstelling na orale toediening wordt vergeleken met diezelfde dosis intraveneus, die per definitie F = 1 heeft.'
+  },
+  {
+    type:'single', domain:'Orale beschikbaarheid (F)',
+    q:'Waarom heeft intraveneuze toediening per definitie F = 1?',
+    options:[
+      'Er is geen absorptie- of first-pass-verlies bij IV-toediening',
+      'IV-toediening heeft altijd de langste halfwaardetijd',
+      'IV-toediening omzeilt de nierklaring volledig',
+      'F = 1 is slechts een aanname, geen werkelijk gegeven'
+    ],
+    correct:0,
+    explain:'Bij IV-toediening komt het geneesmiddel direct en volledig in de systemische circulatie, zonder enig absorptie- of first-pass-verlies. Daarom geldt per definitie F = 1 voor IV-toediening.'
+  },
+  {
+    type:'open', domain:'Orale beschikbaarheid (F)',
+    q:'Leg uit waarom een geneesmiddel met een laag en/of wisselend F lastiger te doseren is via de orale route, en wat dit betekent bij het overschakelen tussen IV en oraal.',
+    model:'Bij een laag F bereikt slechts een klein en soms wisselend deel van de orale dosis de systemische circulatie, door variabele absorptie en/of first-pass metabolisme (bijvoorbeeld door wisselende leverdoorbloeding of enzymactiviteit). Dit maakt de uiteindelijke blootstelling minder voorspelbaar. Bij het overschakelen tussen IV en oraal (of tussen orale formuleringen) moet de dosis daarom zorgvuldig worden aangepast om dezelfde blootstelling (AUC) te behouden.',
+    explain:'Vergelijk je antwoord met het modelantwoord: kwam de onvoorspelbaarheid van de blootstelling door variabele absorptie/first-pass naar voren, en de noodzaak tot zorgvuldige dosisaanpassing bij het wisselen van toedieningsweg of formulering?'
+  },
+  {
+    type:'match', domain:'Overzicht formules',
+    q:'Koppel elk begrip aan de bijbehorende formule.',
+    left:['Steady-state concentratie (Cpss)','Halfwaardetijd (t½)','Oplaaddosis (loading dose)','Orale biobeschikbaarheid (F)'],
+    right:['dose rate / CL','0,693 × Vd / CL','Vd × gewenste Cp','AUC(oraal) / AUC(intraveneus)'],
+    correctMap:[0,1,2,3],
+    explain:'Deze vier formules vormen samen de kern van de klinische farmacokinetiek: Cpss bepaalt de uiteindelijke spiegel bij continue toediening, t½ bepaalt hoe snel iets verandert, de oplaaddosis bepaalt hoe snel je op niveau komt, en F bepaalt welk deel van een orale dosis daadwerkelijk meetelt.'
+  }
+];
+
+let current = 0;
+let score = 0;
+const results = [];
+let missed = [];
+let state = {};
+
+const card = document.getElementById('card');
+const counter = document.getElementById('counter');
+const progressTrack = document.getElementById('progressTrack');
+
+function buildProgressSegments(){
+  progressTrack.innerHTML = QUESTIONS.map((_,i)=>`<div class="seg" data-i="${i}"></div>`).join('');
+}
+
+function updateProgress(){
+  document.querySelectorAll('.seg').forEach((el,i)=>{
+    el.classList.toggle('filled', i<current);
+    el.classList.toggle('active', i===current);
+  });
+}
+
+function domainStats(){
+  const map = {};
+  results.forEach((r,i)=>{
+    const d = QUESTIONS[i].domain;
+    if(!map[d]) map[d] = {correct:0,total:0};
+    map[d].total++;
+    if(r.correct) map[d].correct++;
+  });
+  return map;
+}
+
+function render(){
+  if(current >= QUESTIONS.length){
+    renderEnd();
+    return;
+  }
+  counter.textContent = `Vraag ${current+1} / ${QUESTIONS.length}`;
+  updateProgress();
+  const qd = QUESTIONS[current];
+  state = {checked:false};
+  let html = `<div class="domain-tag">${qd.domain}</div>`;
+  if(qd.vignette) html += `<div class="vignette">${qd.vignette}</div>`;
+  html += `<p class="question">${qd.q}</p>`;
+
+  if(qd.type==='single' || qd.type==='case'){
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = null;
+  } else if(qd.type==='multi'){
+    html += `<div class="hint">Meerdere antwoorden mogelijk</div>`;
+    html += `<div class="options">` + qd.options.map((o,i)=>
+      `<div class="opt multi" data-i="${i}"><span class="marker"></span><span>${o}</span></div>`
+    ).join('') + `</div>`;
+    state.selected = new Set();
+  } else if(qd.type==='match'){
+    const shuffledRight = qd.right.map((r,i)=>({r,i}));
+    state.rightOrder = shuffledRight;
+    state.pairs = {};
+    state.activeLeft = null;
+    html += `<span class="match-hint">Klik een begrip links aan, klik daarna de bijbehorende definitie rechts — beide krijgen dan hetzelfde gekleurde nummer.</span>`;
+    html += `<div class="match-grid">
+      <div class="match-col" id="matchLeft">${qd.left.map((l,i)=>`<div class="match-item" data-i="${i}"><span class="badge" data-badge></span><span class="txt">${l}</span></div>`).join('')}</div>
+      <div class="match-col" id="matchRight">${shuffledRight.map((o,pos)=>`<div class="match-item" data-pos="${pos}"><span class="badge" data-badge></span><span class="txt">${o.r}</span></div>`).join('')}</div>
+    </div>`;
+  } else if(qd.type==='order'){
+    state.pool = qd.items.map((it,i)=>({it,i,used:false}));
+    state.seq = [];
+    html += `<div class="order-pool" id="orderPool">${state.pool.map((p,idx)=>`<div class="order-chip" data-idx="${idx}">${p.it}</div>`).join('')}</div>`;
+    html += `<button class="undo-btn" id="undoBtn">↺ laatste terugzetten</button>`;
+    html += `<div class="order-seq" id="orderSeq"></div>`;
+  } else if(qd.type==='hotspot'){
+    state.selectedPt = null;
+    html += `<svg class="hotspot-svg" viewBox="0 0 500 220">
+      <path d="M20,190 C120,190 160,40 260,40 C360,40 400,120 480,180" fill="none" stroke="var(--line)" stroke-width="2"/>
+      ${qd.points.map((p,i)=>`<circle class="hotspot-pt" data-i="${i}" cx="${p.x}" cy="${p.y}" r="9"/><text class="hotspot-label" x="${p.x-4}" y="${p.y-16}">${p.label}</text>`).join('')}
+      <text class="hotspot-label" x="20" y="210">tijd →</text>
+    </svg>`;
+  } else if(qd.type==='open'){
+    html += `<textarea id="openAnswer" placeholder="Typ hier je antwoord in eigen woorden..."></textarea>`;
+  }
+
+  html += `<div class="actions" id="actionsRow">
+    <button class="btn" id="checkBtn">Controleer</button>
+  </div>`;
+
+  card.innerHTML = html;
+  attachHandlers(qd);
+}
+
+function attachHandlers(qd){
+  const checkBtn = document.getElementById('checkBtn');
+
+  if(qd.type==='single' || qd.type==='case'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selected = parseInt(el.dataset.i);
+      });
+    });
+  } else if(qd.type==='multi'){
+    card.querySelectorAll('.opt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(state.selected.has(i)){ state.selected.delete(i); el.classList.remove('selected'); }
+        else { state.selected.add(i); el.classList.add('selected'); }
+      });
+    });
+  } else if(qd.type==='match'){
+    const refreshMatch = ()=>{
+      card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+        const i = parseInt(el.dataset.i);
+        const paired = Object.prototype.hasOwnProperty.call(state.pairs,i);
+        el.classList.toggle('active', state.activeLeft===i);
+        el.classList.toggle('paired', paired);
+        const badge = el.querySelector('[data-badge]');
+        if(paired){ badge.style.background = BADGE_COLORS[i % BADGE_COLORS.length]; badge.textContent = i+1; }
+        else { badge.textContent=''; }
+      });
+      card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+        const pos = parseInt(el.dataset.pos);
+        let pairedLeft = null;
+        Object.entries(state.pairs).forEach(([l,p])=>{ if(p===pos) pairedLeft = parseInt(l); });
+        const badge = el.querySelector('[data-badge]');
+        el.classList.toggle('paired', pairedLeft!==null);
+        if(pairedLeft!==null){ badge.style.background = BADGE_COLORS[pairedLeft % BADGE_COLORS.length]; badge.textContent = pairedLeft+1; }
+        else { badge.textContent=''; }
+      });
+    };
+    card.querySelectorAll('#matchLeft .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const i = parseInt(el.dataset.i);
+        if(Object.prototype.hasOwnProperty.call(state.pairs,i)){
+          delete state.pairs[i]; state.activeLeft=null;
+        } else {
+          state.activeLeft = i;
+        }
+        refreshMatch();
+      });
+    });
+    card.querySelectorAll('#matchRight .match-item').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked || state.activeLeft===null) return;
+        const pos = parseInt(el.dataset.pos);
+        const taken = Object.values(state.pairs).includes(pos);
+        if(taken) return;
+        state.pairs[state.activeLeft] = pos;
+        state.activeLeft = null;
+        refreshMatch();
+      });
+    });
+  } else if(qd.type==='order'){
+    const seqEl = document.getElementById('orderSeq');
+    const poolEl = document.getElementById('orderPool');
+    const renderSeq = ()=>{
+      seqEl.innerHTML = state.seq.map(idx=>`<div class="order-chip">${state.pool[idx].it}</div>`).join('');
+      poolEl.querySelectorAll('.order-chip').forEach(el=>{
+        const idx = parseInt(el.dataset.idx);
+        el.classList.toggle('used', state.pool[idx].used);
+      });
+    };
+    poolEl.querySelectorAll('.order-chip').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        const idx = parseInt(el.dataset.idx);
+        if(state.pool[idx].used) return;
+        state.pool[idx].used = true;
+        state.seq.push(idx);
+        renderSeq();
+      });
+    });
+    document.getElementById('undoBtn').addEventListener('click',()=>{
+      if(state.checked || state.seq.length===0) return;
+      const last = state.seq.pop();
+      state.pool[last].used = false;
+      renderSeq();
+    });
+  } else if(qd.type==='hotspot'){
+    card.querySelectorAll('.hotspot-pt').forEach(el=>{
+      el.addEventListener('click',()=>{
+        if(state.checked) return;
+        card.querySelectorAll('.hotspot-pt').forEach(p=>p.classList.remove('selected'));
+        el.classList.add('selected');
+        state.selectedPt = parseInt(el.dataset.i);
+      });
+    });
+  }
+
+  checkBtn.addEventListener('click',()=>onCheck(qd));
+}
+
+function onCheck(qd){
+  if(state.checked) return;
+
+  if(qd.type==='open'){
+    document.getElementById('checkBtn').outerHTML = '';
+    const modelHtml = `<div class="model-answer"><span class="label">Modelantwoord</span>${qd.model}</div>
+      <div class="self-check">
+        <button class="btn" id="selfCorrect">Ik had dit goed</button>
+        <button class="btn ghost" id="selfIncorrect">Ik miste dit</button>
+      </div>`;
+    document.getElementById('actionsRow').insertAdjacentHTML('beforebegin', modelHtml);
+    document.getElementById('selfCorrect').addEventListener('click',()=>finishQuestion(qd,true));
+    document.getElementById('selfIncorrect').addEventListener('click',()=>finishQuestion(qd,false));
+    state.checked = true;
+    return;
+  }
+
+  let correct = false;
+  if(qd.type==='single' || qd.type==='case'){
+    if(state.selected===null){ return; }
+    correct = state.selected === qd.correct;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(i===qd.correct) el.classList.add('correct');
+      else if(i===state.selected) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='multi'){
+    if(state.selected.size===0) return;
+    const sel = [...state.selected].sort().join(',');
+    const cor = [...qd.correct].sort().join(',');
+    correct = sel === cor;
+    card.querySelectorAll('.opt').forEach((el,i)=>{
+      if(qd.correct.includes(i)) el.classList.add('correct');
+      else if(state.selected.has(i)) el.classList.add('incorrect');
+    });
+  } else if(qd.type==='match'){
+    if(Object.keys(state.pairs).length < qd.left.length) return;
+    correct = true;
+    qd.left.forEach((l,i)=>{
+      const posGiven = state.pairs[i];
+      const originalRightIdx = state.rightOrder[posGiven].i;
+      const ok = originalRightIdx === qd.correctMap[i];
+      if(!ok) correct = false;
+      const leftEl = card.querySelector(`#matchLeft [data-i="${i}"]`);
+      leftEl.classList.add(ok?'correct':'incorrect');
+      const rightEl = card.querySelector(`#matchRight [data-pos="${posGiven}"]`);
+      rightEl.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='order'){
+    if(state.seq.length < qd.items.length) return;
+    const chosenOrderOfOriginalIdx = state.seq.map(idx=>state.pool[idx].i);
+    correct = JSON.stringify(chosenOrderOfOriginalIdx) === JSON.stringify(qd.correctOrder);
+    const seqEl = document.getElementById('orderSeq');
+    [...seqEl.children].forEach((el,pos)=>{
+      const ok = chosenOrderOfOriginalIdx[pos] === qd.correctOrder[pos];
+      el.classList.add(ok?'correct':'incorrect');
+    });
+  } else if(qd.type==='hotspot'){
+    if(state.selectedPt===null) return;
+    correct = state.selectedPt === qd.correctIdx;
+    card.querySelectorAll('.hotspot-pt').forEach((el,i)=>{
+      if(i===qd.correctIdx) el.classList.add('correct');
+      else if(i===state.selectedPt) el.classList.add('incorrect');
+    });
+  }
+
+  state.checked = true;
+  finishQuestion(qd, correct);
+}
+
+function finishQuestion(qd, correct){
+  if(correct) score++;
+  results[current] = {correct};
+  const explainHtml = `<div class="explain">${qd.explain}</div>`;
+  const actionsRow = document.getElementById('actionsRow');
+  actionsRow.innerHTML = `<button class="btn" id="nextBtn">${current+1<QUESTIONS.length ? 'Volgende vraag' : 'Bekijk resultaat'}</button>`;
+  actionsRow.insertAdjacentHTML('beforebegin', explainHtml);
+  document.getElementById('nextBtn').addEventListener('click',()=>{
+    current++;
+    render();
+  });
+}
+
+function renderEnd(){
+  counter.textContent = `Klaar`;
+  document.querySelectorAll('.seg').forEach(el=>el.classList.add('filled'));
+
+  const total = QUESTIONS.length;
+  const stats = domainStats();
+  missed = results.map((r,i)=>({...r,i})).filter(r=>!r.correct);
+
+  let html = `
+    <div class="score-label">Totaalscore</div>
+    <div class="score-big">${score} / ${total}</div>
+    <div class="domain-bars">
+      ${Object.entries(stats).map(([d,s])=>`
+        <div class="domain-row">
+          <div class="domain-name">${d}</div>
+          <div class="domain-bar-track"><div class="domain-bar-fill" style="width:${(s.correct/s.total*100).toFixed(0)}%"></div></div>
+          <div class="domain-frac">${s.correct}/${s.total}</div>
+        </div>`).join('')}
+    </div>
+  `;
+
+  if(missed.length){
+    html += `<div class="domain-tag" style="color:var(--incorrect);background:rgba(179,63,50,0.10);">Gemiste vragen (${missed.length})</div>`;
+    html += missed.map(m=>`
+      <div class="miss-item">
+        <div class="miss-q">${QUESTIONS[m.i].q}</div>
+        <div class="miss-explain">${QUESTIONS[m.i].explain}</div>
+      </div>`).join('');
+  }
+
+  html += `<div class="actions">
+    ${missed.length? '<button class="btn ghost" id="retryBtn">Herkansing gemiste vragen</button>':''}
+    <button class="btn" id="restartBtn">Opnieuw — alle vragen</button>
+  </div>`;
+
+  card.innerHTML = html;
+
+  document.getElementById('restartBtn').addEventListener('click',()=>{
+    current=0; score=0; results.length=0;
+    render();
+  });
+  if(missed.length){
+    document.getElementById('retryBtn').addEventListener('click',()=>{
+      const missedIdxs = missed.map(m=>m.i);
+      const originalQuestions = QUESTIONS.slice();
+      const missedQuestions = missedIdxs.map(i=>originalQuestions[i]);
+      QUESTIONS.length = 0;
+      QUESTIONS.push(...missedQuestions);
+      current=0; score=0; results.length=0;
+      render();
+    });
+  }
+}
+
+buildProgressSegments();
+render();
+</script>
+</body>
+</html>
